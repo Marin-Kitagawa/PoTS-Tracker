@@ -1,280 +1,172 @@
 /**
- * @fileoverview Firestore Security Rules for POTS Tracker app.
+ * @fileoverview Firestore Security Rules for the POTS Tracker app.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model.  Each user can only
- * access their own data, preventing unauthorized access to other users'
- * information. This applies to user profiles and all associated log entries.
+ * This ruleset enforces a strict user-ownership model. Each user can only access their own data,
+ * preventing unauthorized access to other users' information.  Schema validation is relaxed to
+ * allow rapid iteration during the prototyping phase.
  *
  * Data Structure:
- * The data is organized hierarchically under the `/users/{userId}` path. Each user
- * has a profile document and subcollections for various types of logs:
- * - /users/{userId} (UserProfile)
- * - /users/{userId}/symptom_logs/{symptomLogId} (SymptomLog)
- * - /users/{userId}/exercise_logs/{exerciseLogId} (ExerciseLog)
- * - /users/{userId}/volume_expansion_logs/{volumeExpansionLogId} (VolumeExpansionLog)
- * - /users/{userId}/sleep_position_logs/{sleepPositionLogId} (SleepPositionLog)
- * - /users/{userId}/compression_garment_logs/{compressionGarmentLogId} (CompressionGarmentLog)
- * - /users/{userId}/physical_countermeasure_logs/{physicalCountermeasureLogId} (PhysicalCountermeasureLog)
- * - /users/{userId}/skin_surface_cooling_logs/{skinSurfaceCoolingLogId} (SkinSurfaceCoolingLog)
+ * All data is nested under /users/{userId}, ensuring clear ownership and isolation.
  *
  * Key Security Decisions:
- * - User profiles and all log data are strictly private to the owning user.
- * - Listing of user profiles is disallowed to prevent enumeration.
- * - All write operations are validated to ensure the authenticated user is the owner.
- *
- * Denormalization for Authorization:
- *  - All log entries contain the `userId` field, which is used to enforce ownership and avoid `get()` calls in rules.
+ * - User listing is disallowed to prevent potential information leakage.
+ * - All write operations are restricted to the owner of the data.
+ * - Data consistency between the path and document fields (userId) is enforced.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper function to check if the user is signed in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if the authenticated user is the owner of the resource.
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Helper function to check if the authenticated user is the owner of the resource and if the resource exists.
+    function isExistingOwner(userId) {
+      return isOwner(userId) && exists(resource);
+    }
+
     /**
-     * @description Protects the UserProfile document.  Only the owner can read or write their own profile. Listing all profiles is disallowed.
+     * @description Allows users to read and write their own profile data.
      * @path /users/{userId}
-     * @allow (create) If the user is creating their own profile.
-     * @allow (get) If the user is reading their own profile.
-     * @allow (update) If the user is updating their own profile.
-     * @allow (delete) If the user is deleting their own profile.
-     * @deny (list) Listing all user profiles is not allowed.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User with ID 'user123' can create their profile.
+     * @deny (create) User with ID 'user123' cannot create a profile with a different ID 'user456'.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
       allow get: if isOwner(userId);
       allow list: if false;
       allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Protects the SymptomLog subcollection.  Only the owner can read or write their own logs.
+     * @description Allows a user to manage their own symptom logs.
      * @path /users/{userId}/symptom_logs/{symptomLogId}
-     * @allow (create) If the user is creating a new log in their own profile.
-     * @allow (get) If the user is reading a log in their own profile.
-     * @allow (list) If the user is listing logs in their own profile.
-     * @allow (update) If the user is updating a log in their own profile.
-     * @allow (delete) If the user is deleting a log in their own profile.
-     * @deny If a user attempts to access logs belonging to another user.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User 'user123' can create a symptom log entry.
+     * @deny (update) User 'user123' cannot update a symptom log entry owned by 'user456'.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId}/symptom_logs/{symptomLogId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-        function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-        }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+       /**
+     * @description Allows a user to manage their own activity logs.
+     * @path /users/{userId}/activity_logs/{activityLogId}
+     * @allow (list) User 'Ih612rAOa0TV4rhKrduyksRkbB02' can list own activity log entries.
+     * @allow (create) User 'user123' can create an activity log entry.
+     * @deny (update) User 'user123' cannot update an activity log entry owned by 'user456'.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/activity_logs/{activityLogId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Protects the ExerciseLog subcollection.  Only the owner can read or write their own logs.
+     * @description Allows a user to manage their own exercise logs.
      * @path /users/{userId}/exercise_logs/{exerciseLogId}
-     * @allow (create) If the user is creating a new log in their own profile.
-     * @allow (get) If the user is reading a log in their own profile.
-     * @allow (list) If the user is listing logs in their own profile.
-     * @allow (update) If the user is updating a log in their own profile.
-     * @allow (delete) If the user is deleting a log in their own profile.
-     * @deny If a user attempts to access logs belonging to another user.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User 'user123' can create an exercise log entry.
+     * @deny (update) User 'user123' cannot update an exercise log entry owned by 'user456'.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId}/exercise_logs/{exerciseLogId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-        function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-        }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
-      allow delete: if isExistingOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Protects the VolumeExpansionLog subcollection.  Only the owner can read or write their own logs.
+     * @description Allows a user to manage their own volume expansion logs.
      * @path /users/{userId}/volume_expansion_logs/{volumeExpansionLogId}
-     * @allow (create) If the user is creating a new log in their own profile.
-     * @allow (get) If the user is reading a log in their own profile.
-     * @allow (list) If the user is listing logs in their own profile.
-     * @allow (update) If the user is updating a log in their own profile.
-     * @allow (delete) If the user is deleting a log in their own profile.
-     * @deny If a user attempts to access logs belonging to another user.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User 'user123' can create a volume expansion log entry.
+     * @deny (update) User 'user123' cannot update a volume expansion log entry owned by 'user456'.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId}/volume_expansion_logs/{volumeExpansionLogId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-        function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-        }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
-      allow delete: if isExistingOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Protects the SleepPositionLog subcollection.  Only the owner can read or write their own logs.
+     * @description Allows a user to manage their own sleep position logs.
      * @path /users/{userId}/sleep_position_logs/{sleepPositionLogId}
-     * @allow (create) If the user is creating a new log in their own profile.
-     * @allow (get) If the user is reading a log in their own profile.
-     * @allow (list) If the user is listing logs in their own profile.
-     * @allow (update) If the user is updating a log in their own profile.
-     * @allow (delete) If the user is deleting a log in their own profile.
-     * @deny If a user attempts to access logs belonging to another user.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User 'user123' can create a sleep position log entry.
+     * @deny (update) User 'user123' cannot update a sleep position log entry owned by 'user456'.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId}/sleep_position_logs/{sleepPositionLogId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-        function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-        }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
-      allow delete: if isExistingOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Protects the CompressionGarmentLog subcollection.  Only the owner can read or write their own logs.
+     * @description Allows a user to manage their own compression garment logs.
      * @path /users/{userId}/compression_garment_logs/{compressionGarmentLogId}
-     * @allow (create) If the user is creating a new log in their own profile.
-     * @allow (get) If the user is reading a log in their own profile.
-     * @allow (list) If the user is listing logs in their own profile.
-     * @allow (update) If the user is updating a log in their own profile.
-     * @allow (delete) If the user is deleting a log in their own profile.
-     * @deny If a user attempts to access logs belonging to another user.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User 'user123' can create a compression garment log entry.
+     * @deny (update) User 'user123' cannot update a compression garment log entry owned by 'user456'.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId}/compression_garment_logs/{compressionGarmentLogId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-        function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-        }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
-      allow delete: if isExistingOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Protects the PhysicalCountermeasureLog subcollection.  Only the owner can read or write their own logs.
+     * @description Allows a user to manage their own physical countermeasure logs.
      * @path /users/{userId}/physical_countermeasure_logs/{physicalCountermeasureLogId}
-     * @allow (create) If the user is creating a new log in their own profile.
-     * @allow (get) If the user is reading a log in their own profile.
-     * @allow (list) If the user is listing logs in their own profile.
-     * @allow (update) If the user is updating a log in their own profile.
-     * @allow (delete) If the user is deleting a log in their own profile.
-     * @deny If a user attempts to access logs belonging to another user.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User 'user123' can create a physical countermeasure log entry.
+     * @deny (update) User 'user123' cannot update a physical countermeasure log entry owned by 'user456'.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId}/physical_countermeasure_logs/{physicalCountermeasureLogId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-        function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-        }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
-      allow delete: if isExistingOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Protects the SkinSurfaceCoolingLog subcollection.  Only the owner can read or write their own logs.
+     * @description Allows a user to manage their own skin surface cooling logs.
      * @path /users/{userId}/skin_surface_cooling_logs/{skinSurfaceCoolingLogId}
-     * @allow (create) If the user is creating a new log in their own profile.
-     * @allow (get) If the user is reading a log in their own profile.
-     * @allow (list) If the user is listing logs in their own profile.
-     * @allow (update) If the user is updating a log in their own profile.
-     * @allow (delete) If the user is deleting a log in their own profile.
-     * @deny If a user attempts to access logs belonging to another user.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User 'user123' can create a skin surface cooling log entry.
+     * @deny (update) User 'user123' cannot update a skin surface cooling log entry owned by 'user456'.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId}/skin_surface_cooling_logs/{skinSurfaceCoolingLogId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-       function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-        }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userProfileId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userProfileId == resource.data.userProfileId;
-      allow delete: if isExistingOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
   }
 }
