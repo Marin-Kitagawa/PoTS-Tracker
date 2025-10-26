@@ -173,20 +173,31 @@ export function CountermeasuresChart({ data: rawData }: { data: any[] | null }) 
             return acc;
         }, {} as Record<string, number>);
 
+        const countermeasureDurations = allCountermeasures.reduce((acc, cm) => {
+            acc[cm] = 0;
+            return acc;
+        }, {} as Record<string, number>);
+
+
         if (rawData) {
             rawData.forEach(log => {
                 if (countermeasureCounts.hasOwnProperty(log.countermeasureType)) {
                     countermeasureCounts[log.countermeasureType]++;
+                    countermeasureDurations[log.countermeasureType] += log.duration;
                 }
             });
         }
         
         const maxCount = Math.max(...Object.values(countermeasureCounts), 1);
+        const maxDuration = Math.max(...Object.values(countermeasureDurations), 1);
 
-        return Object.entries(countermeasureCounts).map(([subject, A]) => ({
+
+        return Object.keys(countermeasureCounts).map((subject) => ({
             subject,
-            A,
-            fullMark: maxCount,
+            count: countermeasureCounts[subject],
+            duration: countermeasureDurations[subject],
+            fullMarkCount: maxCount,
+            fullMarkDuration: maxDuration,
         }));
     }, [rawData]);
 
@@ -196,7 +207,8 @@ export function CountermeasuresChart({ data: rawData }: { data: any[] | null }) 
         <PolarGrid />
         <PolarAngleAxis dataKey="subject" />
         <PolarRadiusAxis angle={30} domain={[0, 'dataMax + 1']} />
-        <Radar name="Times Used" dataKey="A" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.6} />
+        <Radar name="Times Used" dataKey="count" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.6} />
+        <Radar name="Total Duration (min)" dataKey="duration" stroke="hsl(var(--chart-2))" fill="hsl(var(--chart-2))" fillOpacity={0.6} />
         <Tooltip />
         <Legend />
       </RadarChart>

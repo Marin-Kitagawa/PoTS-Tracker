@@ -12,6 +12,7 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
   deleteUser,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Terminal } from 'lucide-react';
 
 const profileSchema = z.object({
   displayName: z.string().min(1, 'Name is required').optional(),
@@ -150,6 +153,16 @@ export default function ProfilePage() {
     }
   };
 
+  const handleResendVerification = async () => {
+    if (!user) return;
+    try {
+        await sendEmailVerification(user);
+        toast({ title: 'Verification Email Sent', description: 'Please check your inbox.' });
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Error', description: error.message });
+    }
+  }
+
   return (
     <>
       <div className="space-y-8">
@@ -157,6 +170,17 @@ export default function ProfilePage() {
           <h1 className="text-3xl font-bold text-foreground">Profile</h1>
           <p className="text-muted-foreground">Manage your account settings.</p>
         </div>
+
+        {user && !user.emailVerified && (
+          <Alert>
+            <Terminal className="h-4 w-4" />
+            <AlertTitle>Email not verified</AlertTitle>
+            <AlertDescription className="flex items-center justify-between">
+              <p>Please check your inbox to verify your email address.</p>
+              <Button variant="outline" onClick={handleResendVerification}>Resend Verification</Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Card>
           <CardHeader>
