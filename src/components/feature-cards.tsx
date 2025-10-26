@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Dumbbell, GlassWater, Bed, Layers, Activity, Snowflake, Plus, Minus, Info } from 'lucide-react';
+import { Dumbbell, GlassWater, Bed, Layers, Activity, Snowflake, Plus, Minus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,8 +12,6 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 export function ExerciseTrackingCard() {
   const { toast } = useToast();
@@ -217,13 +215,6 @@ export function SleepLoggingCard() {
                     <p className="text-sm text-muted-foreground">No recent countermeasures logged.</p>
                 )}
             </div>
-             <Alert className="mt-4">
-              <Info className="h-4 w-4" />
-              <AlertTitle>Get AI Reminders</AlertTitle>
-              <AlertDescription>
-                AI can analyze your day and suggest reminders for countermeasures you might have missed. This feature is coming soon!
-              </AlertDescription>
-            </Alert>
         </CardContent>
         </Card>
     );

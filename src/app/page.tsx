@@ -7,7 +7,9 @@ import {
   CountermeasuresCard,
   SkinCoolingCard,
 } from '@/components/feature-cards';
-import { DosageRecommendation } from '@/components/dosage-recommendation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { LineChart } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -15,6 +17,14 @@ export default function Home() {
       <DashboardHeader />
       <main className="flex-1 p-4 sm:p-6 lg:p-8">
         <div className="mx-auto max-w-7xl">
+          <div className="flex justify-end mb-6">
+            <Button asChild>
+              <Link href="/dashboard">
+                <LineChart className="mr-2 h-4 w-4" />
+                View Dashboard
+              </Link>
+            </Button>
+          </div>
           <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             <ExerciseTrackingCard />
             <VolumeExpansionCard />
@@ -22,9 +32,6 @@ export default function Home() {
             <CompressionTrackingCard />
             <CountermeasuresCard />
             <SkinCoolingCard />
-          </div>
-          <div className="mt-8">
-            <DosageRecommendation />
           </div>
         </div>
       </main>
