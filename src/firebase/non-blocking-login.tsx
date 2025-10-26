@@ -5,7 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendEmailVerification,
-  User,
+  updateProfile,
 } from 'firebase/auth';
 
 /** Initiate anonymous sign-in (non-blocking). */
@@ -16,9 +16,11 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
 }
 
 /** Initiate email/password sign-up (non-blocking). */
-export function initiateEmailSignUp(authInstance: Auth, email: string, password: string): void {
+export function initiateEmailSignUp(authInstance: Auth, email: string, password: string, displayName: string): void {
   createUserWithEmailAndPassword(authInstance, email, password)
     .then((userCredential) => {
+      // Set the user's display name
+      updateProfile(userCredential.user, { displayName });
       // Send verification email
       sendEmailVerification(userCredential.user);
     })

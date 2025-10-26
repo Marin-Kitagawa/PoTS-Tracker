@@ -16,6 +16,7 @@ import {
 } from '@/firebase/non-blocking-login';
 
 export default function AuthenticationPage() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { toast } = useToast();
@@ -23,15 +24,15 @@ export default function AuthenticationPage() {
   const router = useRouter();
 
   const handleSignUp = () => {
-    if (!email || !password) {
+    if (!name || !email || !password) {
       toast({
         variant: 'destructive',
         title: 'Missing fields',
-        description: 'Please enter both email and password.',
+        description: 'Please enter your name, email, and password.',
       });
       return;
     }
-    initiateEmailSignUp(auth, email, password);
+    initiateEmailSignUp(auth, email, password, name);
     toast({
       title: 'Sign up initiated',
       description: 'Please check your email for verification.',
@@ -99,6 +100,10 @@ export default function AuthenticationPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+               <div className="space-y-2">
+                <Label htmlFor="signup-name">Full Name</Label>
+                <Input id="signup-name" type="text" placeholder="Jane Doe" value={name} onChange={(e) => setName(e.target.value)} required />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="signup-email">Email</Label>
                 <Input id="signup-email" type="email" placeholder="m@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
