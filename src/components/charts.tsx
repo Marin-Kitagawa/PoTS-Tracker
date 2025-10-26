@@ -76,7 +76,7 @@ export function SymptomsChart({ data: rawData }: { data: any[] | null }) {
   return (
     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+        <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
           <YAxis
@@ -84,7 +84,7 @@ export function SymptomsChart({ data: rawData }: { data: any[] | null }) {
             axisLine={false}
             tickMargin={8}
             domain={[0, 10]}
-            label={{ value: 'Severity (0-10)', angle: -90, position: 'insideLeft', offset: -10 }}
+            label={{ value: 'Severity (0-10)', angle: -90, position: 'insideLeft' }}
           />
           <Tooltip content={<ChartTooltipContent />} />
           <Legend />
