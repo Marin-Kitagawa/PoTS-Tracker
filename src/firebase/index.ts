@@ -2,7 +2,7 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, browserLocalPersistence, setPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore'
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
@@ -24,7 +24,8 @@ export function initializeFirebase() {
       }
       firebaseApp = initializeApp(firebaseConfig);
     }
-
+    const auth = getAuth(firebaseApp);
+    setPersistence(auth, browserLocalPersistence);
     return getSdks(firebaseApp);
   }
 

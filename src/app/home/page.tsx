@@ -24,13 +24,15 @@ export default function HomePage() {
   }
 
   if (!user) {
+    // This case should ideally not be hit if routing is protected
+    // but it's good practice to have it.
     return <div>Please sign in to continue.</div>
   }
 
   return (
     <div>
         <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Welcome to POTS Tracker</h1>
+            <h1 className="text-3xl font-bold text-foreground">Welcome, {user.displayName || 'User'}</h1>
             <p className="text-muted-foreground">Select a category below to start logging your activities and symptoms.</p>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
