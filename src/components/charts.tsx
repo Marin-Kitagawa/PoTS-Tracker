@@ -46,22 +46,25 @@ export function SymptomsChart({ data: rawData }: { data: any[] | null }) {
         .sort((a, b) => a.timestamp.toDate() - b.timestamp.toDate())
         .map(log => ({
             date: format(log.timestamp.toDate(), 'MMM d'),
-            symptom: log.symptom,
+            symptom: log.symptom.replace(/\s+/g, '').replace(/^\w/, c => c.toLowerCase()),
+            originalSymptom: log.symptom,
             severity: log.severity,
         }));
         
     const groupedByDate = processedData.reduce((acc, curr) => {
-        (acc[curr.date] = acc[curr.date] || { date: curr.date })[curr.symptom] = curr.severity;
+        if (!acc[curr.date]) {
+          acc[curr.date] = { date: curr.date };
+        }
+        acc[curr.date][curr.symptom] = curr.severity;
         return acc;
     }, {} as Record<string, any>);
 
-    const uniqueSymptoms = [...new Set(processedData.map(d => d.symptom))];
-    const camelCaseSymptoms = uniqueSymptoms.map(s => s.replace(/\s+/g, '').replace(/^\w/, c => c.toLowerCase()));
-
-    const dynamicChartConfig = camelCaseSymptoms.reduce((acc, symptom, index) => {
-        const originalSymptomName = uniqueSymptoms[index];
-        acc[symptom] = {
-            label: originalSymptomName,
+    const uniqueSymptoms = [...new Set(processedData.map(d => d.originalSymptom))];
+    
+    const dynamicChartConfig = uniqueSymptoms.reduce((acc, symptomName, index) => {
+        const camelCaseName = symptomName.replace(/\s+/g, '').replace(/^\w/, c => c.toLowerCase());
+        acc[camelCaseName] = {
+            label: symptomName,
             color: `hsl(var(--chart-${(index % 5) + 1}))`,
         };
         return acc;
@@ -73,7 +76,7 @@ export function SymptomsChart({ data: rawData }: { data: any[] | null }) {
   return (
     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+        <LineChart data={data} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
           <YAxis
@@ -81,12 +84,12 @@ export function SymptomsChart({ data: rawData }: { data: any[] | null }) {
             axisLine={false}
             tickMargin={8}
             domain={[0, 10]}
-            label={{ value: 'Severity (0-10)', angle: -90, position: 'insideLeft', offset: 10 }}
+            label={{ value: 'Severity (0-10)', angle: -90, position: 'insideLeft', offset: -10 }}
           />
           <Tooltip content={<ChartTooltipContent />} />
           <Legend />
           {Object.keys(chartConfig).map((symptomKey) => (
-             <Line key={symptomKey} type="monotone" dataKey={symptomKey.replace(/\s+/g, '').replace(/^\w/, c => c.toLowerCase())} stroke={`var(--color-${symptomKey})`} strokeWidth={2} dot={false} name={chartConfig[symptomKey].label} />
+             <Line key={symptomKey} type="monotone" dataKey={symptomKey} stroke={`var(--color-${symptomKey})`} strokeWidth={2} dot={false} name={chartConfig[symptomKey].label} />
           ))}
         </LineChart>
       </ResponsiveContainer>
