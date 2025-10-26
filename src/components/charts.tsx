@@ -84,7 +84,7 @@ export function SymptomsChart({ data: rawData }: { data: any[] | null }) {
             axisLine={false}
             tickMargin={8}
             domain={[0, 10]}
-            label={{ value: 'Severity (0-10)', angle: -90, position: 'insideLeft' }}
+            label={{ value: 'Severity (0-10)', angle: -90, position: 'insideLeft', offset: -20 }}
           />
           <Tooltip content={<ChartTooltipContent />} />
           <Legend />
@@ -159,15 +159,46 @@ export function ExerciseChart({ data: rawData }: { data: any[] | null }) {
   );
 }
 
+export function CompressionGarmentChart({ data: rawData }: { data: any[] | null }) {
+    const data = useMemo(() => {
+        if (!rawData) return [];
+        const garmentCounts = rawData.reduce((acc, log) => {
+            acc[log.garmentType] = (acc[log.garmentType] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
+        return Object.entries(garmentCounts).map(([name, value]) => ({
+            name,
+            value,
+        }));
+
+    }, [rawData]);
+
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <PieChart>
+        <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+
 const allCountermeasures = [
     'Squeeze a rubber ball',
-    'Leg crossing + muscle tensing',
+    'Leg crossing with tensing',
     'Muscle pumping (swaying/tiptoeing)',
     'Squatting / sitting / lying down',
     'Cough CPR (forceful coughing)',
     'Negative-pressure breathing (ITD device)',
     'Skin surface cooling'
-  ];
+];
 
 export function CountermeasuresChart({ data: rawData }: { data: any[] | null }) {
     const data = useMemo(() => {

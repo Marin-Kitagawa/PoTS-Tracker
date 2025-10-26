@@ -7,6 +7,7 @@ import {
   IntakeChart,
   ExerciseChart,
   CountermeasuresChart,
+  CompressionGarmentChart,
 } from '@/components/charts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import AppSidebar from '@/components/app-sidebar';
@@ -41,6 +42,12 @@ export default function DashboardPage() {
   );
   const { data: countermeasuresLogs } = useCollection(countermeasuresLogsRef);
 
+  const compressionLogsRef = useMemoFirebase(() =>
+    user ? collection(firestore, `users/${user.uid}/compression_garment_logs`) : null,
+    [user, firestore]
+  );
+  const { data: compressionLogs } = useCollection(compressionLogsRef);
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <AppSidebar />
@@ -73,7 +80,15 @@ export default function DashboardPage() {
                   <ExerciseChart data={exerciseLogs} />
                 </CardContent>
               </Card>
-              <Card className="col-span-1 lg:col-span-2">
+               <Card>
+                <CardHeader>
+                  <CardTitle>Compression Garment Usage</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CompressionGarmentChart data={compressionLogs} />
+                </CardContent>
+              </Card>
+              <Card>
                 <CardHeader>
                   <CardTitle>Physical Countermeasures Usage</CardTitle>
                 </CardHeader>
