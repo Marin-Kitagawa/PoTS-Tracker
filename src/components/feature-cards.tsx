@@ -175,7 +175,7 @@ export function SleepLoggingCard() {
     const firestore = useFirestore();
 
     const collectionRef = useMemoFirebase(() => {
-        if (!user) return null;
+        if (!user || !firestore) return null;
         return collection(firestore, `users/${user.uid}/sleep_position_logs`);
     }, [user, firestore]);
 
