@@ -1,0 +1,399 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user profile within the POTS Tracker app.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user profile."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "dateJoined": {
+          "type": "string",
+          "description": "Date and time when the user joined the app.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "dateJoined"
+      ]
+    },
+    "ExerciseLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ExerciseLog",
+      "type": "object",
+      "description": "Represents a log entry for an exercise session.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the exercise log entry."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N ExerciseLog)"
+        },
+        "exerciseType": {
+          "type": "string",
+          "description": "Type of exercise performed (horizontal/upright, endurance, resistance)."
+        },
+        "frequency": {
+          "type": "number",
+          "description": "Frequency of the exercise (e.g., times per week)."
+        },
+        "duration": {
+          "type": "number",
+          "description": "Duration of the exercise session in minutes."
+        },
+        "rpe": {
+          "type": "number",
+          "description": "Rate of Perceived Exertion (RPE) level during the exercise."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date and time when the exercise was performed.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "exerciseType",
+        "frequency",
+        "duration",
+        "rpe",
+        "date"
+      ]
+    },
+    "VolumeExpansionLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VolumeExpansionLog",
+      "type": "object",
+      "description": "Represents a log entry for daily salt and fluid intake.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the volume expansion log entry."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N VolumeExpansionLog)"
+        },
+        "saltIntake": {
+          "type": "number",
+          "description": "Daily salt intake in grams of sodium (up to 10g)."
+        },
+        "fluidIntake": {
+          "type": "number",
+          "description": "Daily fluid intake in liters (up to 3L)."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date for the recorded intake.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "saltIntake",
+        "fluidIntake",
+        "date"
+      ]
+    },
+    "SleepPositionLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SleepPositionLog",
+      "type": "object",
+      "description": "Represents a log entry for sleep position, tracking head elevation.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the sleep position log entry."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N SleepPositionLog)"
+        },
+        "headElevated": {
+          "type": "boolean",
+          "description": "Indicates whether the head was elevated 4-6 inches during sleep."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date and time of the sleep recording.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "headElevated",
+        "date"
+      ]
+    },
+    "CompressionGarmentLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CompressionGarmentLog",
+      "type": "object",
+      "description": "Represents a log entry for compression garment use.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the compression garment log entry."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N CompressionGarmentLog)"
+        },
+        "garmentType": {
+          "type": "string",
+          "description": "Type of compression garment used (abdomen-high or full-lower-body)."
+        },
+        "duration": {
+          "type": "number",
+          "description": "Duration of compression garment use in minutes."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date and time of garment use.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "garmentType",
+        "duration",
+        "date"
+      ]
+    },
+    "PhysicalCountermeasureLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PhysicalCountermeasureLog",
+      "type": "object",
+      "description": "Represents a log entry for physical countermeasures used.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the physical countermeasure log entry."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N PhysicalCountermeasureLog)"
+        },
+        "countermeasureType": {
+          "type": "string",
+          "description": "Type of physical countermeasure used (e.g., squeezing a rubber ball, leg crossing)."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp when the countermeasure was used.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "countermeasureType",
+        "timestamp"
+      ]
+    },
+    "SkinSurfaceCoolingLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SkinSurfaceCoolingLog",
+      "type": "object",
+      "description": "Represents a log entry for skin surface cooling usage.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the skin surface cooling log entry."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N SkinSurfaceCoolingLog)"
+        },
+        "coolingMethod": {
+          "type": "string",
+          "description": "Method used for skin cooling."
+        },
+        "frequency": {
+          "type": "number",
+          "description": "Frequency of skin cooling application."
+        },
+        "usageConditions": {
+          "type": "string",
+          "description": "Conditions under which skin cooling was used."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date and time of cooling usage.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "coolingMethod",
+        "frequency",
+        "usageConditions",
+        "date"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information. User ID is used for path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/exercise_logs/{exerciseLogId}",
+        "definition": {
+          "entityName": "ExerciseLog",
+          "schema": {
+            "$ref": "#/backend/entities/ExerciseLog"
+          },
+          "description": "Stores exercise log entries for a specific user. User ID is used for path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "exerciseLogId",
+              "description": "The unique identifier for the exercise log entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/volume_expansion_logs/{volumeExpansionLogId}",
+        "definition": {
+          "entityName": "VolumeExpansionLog",
+          "schema": {
+            "$ref": "#/backend/entities/VolumeExpansionLog"
+          },
+          "description": "Stores volume expansion log entries for a specific user. User ID is used for path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "volumeExpansionLogId",
+              "description": "The unique identifier for the volume expansion log entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/sleep_position_logs/{sleepPositionLogId}",
+        "definition": {
+          "entityName": "SleepPositionLog",
+          "schema": {
+            "$ref": "#/backend/entities/SleepPositionLog"
+          },
+          "description": "Stores sleep position log entries for a specific user. User ID is used for path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "sleepPositionLogId",
+              "description": "The unique identifier for the sleep position log entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/compression_garment_logs/{compressionGarmentLogId}",
+        "definition": {
+          "entityName": "CompressionGarmentLog",
+          "schema": {
+            "$ref": "#/backend/entities/CompressionGarmentLog"
+          },
+          "description": "Stores compression garment log entries for a specific user. User ID is used for path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "compressionGarmentLogId",
+              "description": "The unique identifier for the compression garment log entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/physical_countermeasure_logs/{physicalCountermeasureLogId}",
+        "definition": {
+          "entityName": "PhysicalCountermeasureLog",
+          "schema": {
+            "$ref": "#/backend/entities/PhysicalCountermeasureLog"
+          },
+          "description": "Stores physical countermeasure log entries for a specific user. User ID is used for path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "physicalCountermeasureLogId",
+              "description": "The unique identifier for the physical countermeasure log entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/skin_surface_cooling_logs/{skinSurfaceCoolingLogId}",
+        "definition": {
+          "entityName": "SkinSurfaceCoolingLog",
+          "schema": {
+            "$ref": "#/backend/entities/SkinSurfaceCoolingLog"
+          },
+          "description": "Stores skin surface cooling log entries for a specific user. User ID is used for path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "skinSurfaceCoolingLogId",
+              "description": "The unique identifier for the skin surface cooling log entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to be secure, scalable, and easily debuggable, following the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). It leverages denormalization and structural segregation to simplify security rules and ensure data integrity.\n\n**Authorization Independence (CRITICAL):**\nEach user's data is stored under their own user ID, ensuring clear ownership. Access control is managed at the path level, eliminating the need for complex `get()` calls to parent documents. Denormalization is used to copy any necessary authorization context (e.g., in collaborative scenarios, if any) to subcollections.\n\n**DBAC (No Custom Claims):**\nUser roles are not stored as custom claims but can be managed within the database itself if required for future expansion (e.g., an `/admin_roles/{userId}` collection). Currently, the design relies on `request.auth.uid` for authorization.\n\n**QAPs (Rules are not Filters):**\nThe structure supports secure `list` operations by ensuring that each collection contains documents with a homogeneous security posture. For instance, user profiles are separated from activity logs, which are further segregated by type (exercise, volume expansion, etc.). This prevents mixing data with different access needs within the same collection.\n\n**Invariants:**\nOwnership is enforced through path-based security rules (e.g., `/users/{userId}/exercise_logs/{logId}`). Timestamps and other critical data points within the log entries are secured using validation rules.\n\n**Denormalization Strategy:**\nWhile not explicitly required based on the provided data entities, if future collaborative features are added where access to logs depends on group membership or shared ownership, the `members` map (or similar) will be denormalized into each relevant document.\n\n**Structural Segregation:**\nEach type of activity log (exercise, volume expansion, sleep position, etc.) is stored in its own subcollection under the user's profile. This segregation simplifies security rules and improves query performance.\n\n**Access Modeling:**\nPath-based ownership (`/users/{userId}/...`) is the primary access control mechanism. This is the most secure and efficient method for managing user-owned data."
+  }
+}

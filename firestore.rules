@@ -1,0 +1,218 @@
+/**
+ * @fileoverview Firestore Security Rules for POTS Tracker App
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model. Each user can only access their own profile and associated activity logs.
+ *
+ * Data Structure:
+ * All data is nested under /users/{userId}, ensuring that each user's data is isolated. Activity logs are further segregated by type into subcollections.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed.
+ * - The rules explicitly deny any ambiguous access, defaulting to a secure posture.
+ * - Authorization relies exclusively on `request.auth.uid` and path-based ownership.
+ *
+ * Denormalization for Authorization:
+ *  - The 'userProfileId' field within each activity log is used to enforce the relationship.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Defines whether a user is signed in.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Defines whether the current user is the owner of the document based on the userId.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * @description Defines whether the current user is the owner of the existing document based on the resource data.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Rule for UserProfile documents.
+     * @path /users/{userId}
+     * @allow (create) - Authenticated user creates their own profile.
+     * @allow (get) - Authenticated user gets their own profile.
+     * @allow (update) - Authenticated user updates their own profile.
+     * @allow (delete) - Authenticated user deletes their own profile.
+     * @deny (create) - User attempts to create a profile with a different user ID.
+     * @deny (update) - User attempts to update another user's profile.
+     * @deny (delete) - User attempts to delete another user's profile.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+     */
+    match /users/{userId} {
+      // Only allow authenticated users to create their own profile.
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == request.auth.uid;
+      // Only allow the user to get their own profile.
+      allow get: if isOwner(userId);
+      // Only allow the user to update their own profile.
+      allow update: if isExistingOwner(userId) && resource.data.id == request.resource.data.id;
+      // Only allow the user to delete their own profile.
+      allow delete: if isExistingOwner(userId);
+      // Prevent listing all users
+      allow list: if false;
+
+      /**
+       * @description Rule for ExerciseLog documents under a specific user.
+       * @path /users/{userId}/exercise_logs/{exerciseLogId}
+       * @allow (create) - Authenticated user creates a log entry for their own profile.
+       * @allow (get) - Authenticated user gets their own log entry.
+       * @allow (update) - Authenticated user updates their own log entry.
+       * @allow (delete) - Authenticated user deletes their own log entry.
+       * @deny (create) - User attempts to create a log entry for another user.
+       * @deny (update) - User attempts to update another user's log entry.
+       * @deny (delete) - User attempts to delete another user's log entry.
+       * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+       */
+      match /exercise_logs/{exerciseLogId} {
+        // Only allow authenticated users to create exercise logs for their own profile.
+        allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userProfileId == userId;
+        // Only allow the user to get their own exercise logs.
+        allow get: if isOwner(userId);
+        // Only allow the user to update their own exercise logs.
+        allow update: if isExistingOwner(userId) && resource.data.userProfileId == request.resource.data.userProfileId;
+        // Only allow the user to delete their own exercise logs.
+        allow delete: if isExistingOwner(userId);
+        // Only allow the owner to list their own documents.
+        allow list: if isOwner(userId);
+      }
+
+      /**
+       * @description Rule for VolumeExpansionLog documents under a specific user.
+       * @path /users/{userId}/volume_expansion_logs/{volumeExpansionLogId}
+       * @allow (create) - Authenticated user creates a log entry for their own profile.
+       * @allow (get) - Authenticated user gets their own log entry.
+       * @allow (update) - Authenticated user updates their own log entry.
+       * @allow (delete) - Authenticated user deletes their own log entry.
+       * @deny (create) - User attempts to create a log entry for another user.
+       * @deny (update) - User attempts to update another user's log entry.
+       * @deny (delete) - User attempts to delete another user's log entry.
+       * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+       */
+      match /volume_expansion_logs/{volumeExpansionLogId} {
+        // Only allow authenticated users to create volume expansion logs for their own profile.
+        allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userProfileId == userId;
+        // Only allow the user to get their own volume expansion logs.
+        allow get: if isOwner(userId);
+        // Only allow the user to update their own volume expansion logs.
+        allow update: if isExistingOwner(userId) && resource.data.userProfileId == request.resource.data.userProfileId;
+        // Only allow the user to delete their own volume expansion logs.
+        allow delete: if isExistingOwner(userId);
+        // Only allow the owner to list their own documents.
+        allow list: if isOwner(userId);
+      }
+
+      /**
+       * @description Rule for SleepPositionLog documents under a specific user.
+       * @path /users/{userId}/sleep_position_logs/{sleepPositionLogId}
+       * @allow (create) - Authenticated user creates a log entry for their own profile.
+       * @allow (get) - Authenticated user gets their own log entry.
+       * @allow (update) - Authenticated user updates their own log entry.
+       * @allow (delete) - Authenticated user deletes their own log entry.
+       * @deny (create) - User attempts to create a log entry for another user.
+       * @deny (update) - User attempts to update another user's log entry.
+       * @deny (delete) - User attempts to delete another user's log entry.
+       * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+       */
+      match /sleep_position_logs/{sleepPositionLogId} {
+        // Only allow authenticated users to create sleep position logs for their own profile.
+        allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userProfileId == userId;
+        // Only allow the user to get their own sleep position logs.
+        allow get: if isOwner(userId);
+        // Only allow the user to update their own sleep position logs.
+        allow update: if isExistingOwner(userId) && resource.data.userProfileId == request.resource.data.userProfileId;
+        // Only allow the user to delete their own sleep position logs.
+        allow delete: if isExistingOwner(userId);
+        // Only allow the owner to list their own documents.
+        allow list: if isOwner(userId);
+      }
+
+      /**
+       * @description Rule for CompressionGarmentLog documents under a specific user.
+       * @path /users/{userId}/compression_garment_logs/{compressionGarmentLogId}
+       * @allow (create) - Authenticated user creates a log entry for their own profile.
+       * @allow (get) - Authenticated user gets their own log entry.
+       * @allow (update) - Authenticated user updates their own log entry.
+       * @allow (delete) - Authenticated user deletes their own log entry.
+       * @deny (create) - User attempts to create a log entry for another user.
+       * @deny (update) - User attempts to update another user's log entry.
+       * @deny (delete) - User attempts to delete another user's log entry.
+       * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+       */
+      match /compression_garment_logs/{compressionGarmentLogId} {
+        // Only allow authenticated users to create compression garment logs for their own profile.
+        allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userProfileId == userId;
+        // Only allow the user to get their own compression garment logs.
+        allow get: if isOwner(userId);
+        // Only allow the user to update their own compression garment logs.
+        allow update: if isExistingOwner(userId) && resource.data.userProfileId == request.resource.data.userProfileId;
+        // Only allow the user to delete their own compression garment logs.
+        allow delete: if isExistingOwner(userId);
+        // Only allow the owner to list their own documents.
+        allow list: if isOwner(userId);
+      }
+
+      /**
+       * @description Rule for PhysicalCountermeasureLog documents under a specific user.
+       * @path /users/{userId}/physical_countermeasure_logs/{physicalCountermeasureLogId}
+       * @allow (create) - Authenticated user creates a log entry for their own profile.
+       * @allow (get) - Authenticated user gets their own log entry.
+       * @allow (update) - Authenticated user updates their own log entry.
+       * @allow (delete) - Authenticated user deletes their own log entry.
+       * @deny (create) - User attempts to create a log entry for another user.
+       * @deny (update) - User attempts to update another user's log entry.
+       * @deny (delete) - User attempts to delete another user's log entry.
+       * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+       */
+      match /physical_countermeasure_logs/{physicalCountermeasureLogId} {
+        // Only allow authenticated users to create physical countermeasure logs for their own profile.
+        allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userProfileId == userId;
+        // Only allow the user to get their own physical countermeasure logs.
+        allow get: if isOwner(userId);
+        // Only allow the user to update their own physical countermeasure logs.
+        allow update: if isExistingOwner(userId) && resource.data.userProfileId == request.resource.data.userProfileId;
+        // Only allow the user to delete their own physical countermeasure logs.
+        allow delete: if isExistingOwner(userId);
+        // Only allow the owner to list their own documents.
+        allow list: if isOwner(userId);
+      }
+
+      /**
+       * @description Rule for SkinSurfaceCoolingLog documents under a specific user.
+       * @path /users/{userId}/skin_surface_cooling_logs/{skinSurfaceCoolingLogId}
+       * @allow (create) - Authenticated user creates a log entry for their own profile.
+       * @allow (get) - Authenticated user gets their own log entry.
+       * @allow (update) - Authenticated user updates their own log entry.
+       * @allow (delete) - Authenticated user deletes their own log entry.
+       * @deny (create) - User attempts to create a log entry for another user.
+       * @deny (update) - User attempts to update another user's log entry.
+       * @deny (delete) - User attempts to delete another user's log entry.
+       * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+       */
+      match /skin_surface_cooling_logs/{skinSurfaceCoolingLogId} {
+        // Only allow authenticated users to create skin surface cooling logs for their own profile.
+        allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userProfileId == userId;
+        // Only allow the user to get their own skin surface cooling logs.
+        allow get: if isOwner(userId);
+        // Only allow the user to update their own skin surface cooling logs.
+        allow update: if isExistingOwner(userId) && resource.data.userProfileId == request.resource.data.userProfileId;
+        // Only allow the user to delete their own skin surface cooling logs.
+        allow delete: if isExistingOwner(userId);
+        // Only allow the owner to list their own documents.
+        allow list: if isOwner(userId);
+      }
+    }
+  }
+}
