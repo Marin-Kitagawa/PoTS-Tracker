@@ -159,32 +159,49 @@ export function ExerciseChart({ data: rawData }: { data: any[] | null }) {
   );
 }
 
+const allGarmentTypes = [
+    'abdomen-high',
+    'full-lower-body'
+];
+
 export function CompressionGarmentChart({ data: rawData }: { data: any[] | null }) {
     const data = useMemo(() => {
-        if (!rawData) return [];
-        const garmentCounts = rawData.reduce((acc, log) => {
-            acc[log.garmentType] = (acc[log.garmentType] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
+        const garmentCounts = allGarmentTypes.reduce((acc, type) => ({ ...acc, [type]: 0 }), {} as Record<string, number>);
+        const garmentDurations = allGarmentTypes.reduce((acc, type) => ({ ...acc, [type]: 0 }), {} as Record<string, number>);
 
-        return Object.entries(garmentCounts).map(([name, value]) => ({
-            name,
-            value,
+        if (rawData) {
+            rawData.forEach(log => {
+                if (garmentCounts.hasOwnProperty(log.garmentType)) {
+                    garmentCounts[log.garmentType]++;
+                    garmentDurations[log.garmentType] += log.duration;
+                }
+            });
+        }
+        
+        const maxCount = Math.max(...Object.values(garmentCounts), 1);
+        const maxDuration = Math.max(...Object.values(garmentDurations), 1);
+
+        return Object.keys(garmentCounts).map((subject) => ({
+            subject,
+            count: garmentCounts[subject],
+            duration: garmentDurations[subject],
+            fullMarkCount: maxCount,
+            fullMarkDuration: maxDuration,
         }));
 
     }, [rawData]);
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <PieChart>
-        <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-          ))}
-        </Pie>
+      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
+        <PolarGrid />
+        <PolarAngleAxis dataKey="subject" />
+        <PolarRadiusAxis angle={30} domain={[0, 'dataMax + 1']} />
+        <Radar name="Times Used" dataKey="count" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.6} />
+        <Radar name="Total Duration (hrs)" dataKey="duration" stroke="hsl(var(--chart-2))" fill="hsl(var(--chart-2))" fillOpacity={0.6} />
         <Tooltip />
         <Legend />
-      </PieChart>
+      </RadarChart>
     </ResponsiveContainer>
   );
 }
@@ -249,3 +266,5 @@ export function CountermeasuresChart({ data: rawData }: { data: any[] | null }) 
     </ResponsiveContainer>
   );
 }
+
+    
