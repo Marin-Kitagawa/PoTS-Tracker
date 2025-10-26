@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore, setDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import {
   updateProfile,
   updateEmail,
@@ -51,6 +52,7 @@ const passwordSchema = z.object({
 export default function ProfilePage() {
   const { user } = useUser();
   const auth = useAuth();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -59,10 +61,16 @@ export default function ProfilePage() {
   const [reauthPassword, setReauthPassword] = useState('');
 
 
-  const { register: registerProfile, handleSubmit: handleSubmitProfile, formState: { errors: profileErrors } } = useForm({
+  const { register: registerProfile, handleSubmit: handleSubmitProfile, formState: { errors: profileErrors }, reset: resetProfile } = useForm({
     resolver: zodResolver(profileSchema),
     defaultValues: { displayName: user?.displayName || '' },
   });
+
+  useEffect(() => {
+    if (user) {
+      resetProfile({ displayName: user.displayName || '' });
+    }
+  }, [user, resetProfile]);
 
   const { register: registerEmail, handleSubmit: handleSubmitEmail, formState: { errors: emailErrors } } = useForm({
     resolver: zodResolver(emailSchema),
@@ -74,9 +82,15 @@ export default function ProfilePage() {
   });
 
   const onSubmitProfile = async (data: z.infer<typeof profileSchema>) => {
-    if (!user) return;
+    if (!user || !firestore) return;
     try {
+      // Update Auth
       await updateProfile(user, { displayName: data.displayName });
+      
+      // Update Firestore
+      const userDocRef = doc(firestore, 'users', user.uid);
+      setDocumentNonBlocking(userDocRef, { displayName: data.displayName }, { merge: true });
+
       toast({ title: 'Success', description: 'Your name has been updated.' });
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Error', description: error.message });
@@ -85,9 +99,15 @@ export default function ProfilePage() {
 
   const onSubmitEmail = async (data: z.infer<typeof emailSchema>) => {
     const action = async () => {
-        if (!user) return;
+        if (!user || !firestore) return;
         try {
+            // Update Auth
             await updateEmail(user, data.email);
+            
+            // Update Firestore
+            const userDocRef = doc(firestore, 'users', user.uid);
+            setDocumentNonBlocking(userDocRef, { email: data.email }, { merge: true });
+
             toast({ title: 'Success', description: 'Your email has been updated. Please verify your new email.' });
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Error', description: error.message });

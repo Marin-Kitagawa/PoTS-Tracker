@@ -7,6 +7,7 @@ import {
   sendEmailVerification,
   updateProfile,
 } from 'firebase/auth';
+import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 /** Initiate anonymous sign-in (non-blocking). */
 export function initiateAnonymousSignIn(authInstance: Auth): void {
@@ -19,10 +20,22 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
 export function initiateEmailSignUp(authInstance: Auth, email: string, password: string, displayName: string): void {
   createUserWithEmailAndPassword(authInstance, email, password)
     .then((userCredential) => {
-      // Set the user's display name
-      updateProfile(userCredential.user, { displayName });
+      const user = userCredential.user;
+      // Set the user's display name in Auth
+      updateProfile(user, { displayName });
       // Send verification email
-      sendEmailVerification(userCredential.user);
+      sendEmailVerification(user);
+
+      // Also create a user profile document in Firestore
+      const firestore = getFirestore(authInstance.app);
+      const userDocRef = doc(firestore, 'users', user.uid);
+      setDoc(userDocRef, {
+        id: user.uid,
+        email: user.email,
+        displayName: displayName,
+        dateJoined: serverTimestamp(),
+      });
+
     })
     .catch((error) => {
       console.error("Email sign-up error", error);

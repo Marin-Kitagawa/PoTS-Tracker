@@ -3,7 +3,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
 
 const features = [
   { title: "Symptom Tracking", href: "/home/symptoms", description: "Log daily symptoms and severity." },
@@ -18,6 +19,14 @@ const features = [
 
 export default function HomePage() {
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const userProfileRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+
+  const { data: userProfile } = useDoc(userProfileRef);
 
   if (isUserLoading) {
     return <div>Loading...</div>
@@ -29,10 +38,12 @@ export default function HomePage() {
     return <div>Please sign in to continue.</div>
   }
 
+  const displayName = userProfile?.displayName || user.displayName || 'User';
+
   return (
     <div>
         <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Welcome, {user.displayName || 'User'}</h1>
+            <h1 className="text-3xl font-bold text-foreground">Welcome, {displayName}</h1>
             <p className="text-muted-foreground">Select a category below to start logging your activities and symptoms.</p>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
