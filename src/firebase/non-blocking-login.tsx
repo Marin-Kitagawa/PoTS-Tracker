@@ -4,6 +4,8 @@ import {
   signInAnonymously,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendEmailVerification,
+  User,
 } from 'firebase/auth';
 
 /** Initiate anonymous sign-in (non-blocking). */
@@ -15,9 +17,14 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
 
 /** Initiate email/password sign-up (non-blocking). */
 export function initiateEmailSignUp(authInstance: Auth, email: string, password: string): void {
-  createUserWithEmailAndPassword(authInstance, email, password).catch((error) => {
-    console.error("Email sign-up error", error);
-    // You might want to use a toast notification here to show the error to the user
+  createUserWithEmailAndPassword(authInstance, email, password)
+    .then((userCredential) => {
+      // Send verification email
+      sendEmailVerification(userCredential.user);
+    })
+    .catch((error) => {
+      console.error("Email sign-up error", error);
+      // You might want to use a toast notification here to show the error to the user
   });
 }
 

@@ -13,6 +13,7 @@ const features = [
   { title: "Compression Garments", href: "/home/compression", description: "Keep track of garment type and duration." },
   { title: "Countermeasures", href: "/home/countermeasures", description: "Record physical countermeasure use." },
   { title: "Skin Cooling", href: "/home/skin-cooling", description: "Log skin surface cooling methods." },
+  { title: "Profile", href: "/home/profile", description: "Manage your profile and account settings." },
 ];
 
 export default function HomePage() {

@@ -11,7 +11,8 @@ import {
   Activity,
   Snowflake,
   HeartPulse,
-  LogOut
+  LogOut,
+  User,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -63,6 +64,18 @@ export default function AppSidebar() {
           ))}
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Link
+                    href="/home/profile"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                    >
+                    <User className="h-5 w-5" />
+                    <span className="sr-only">Profile</span>
+                    </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right">Profile</TooltipContent>
+            </Tooltip>
            <Tooltip>
             <TooltipTrigger asChild>
               <button
