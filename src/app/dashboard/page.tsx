@@ -80,7 +80,7 @@ export default function DashboardPage() {
                   <ExerciseChart data={exerciseLogs} />
                 </CardContent>
               </Card>
-               <Card>
+               <Card className="col-span-1 lg:col-span-2">
                 <CardHeader>
                   <CardTitle>Compression Garment Usage</CardTitle>
                 </CardHeader>
@@ -88,7 +88,7 @@ export default function DashboardPage() {
                   <CompressionGarmentChart data={compressionLogs} />
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="col-span-1 lg:col-span-2">
                 <CardHeader>
                   <CardTitle>Physical Countermeasures Usage</CardTitle>
                 </CardHeader>

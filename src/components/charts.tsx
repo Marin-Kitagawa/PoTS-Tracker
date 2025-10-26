@@ -178,32 +178,28 @@ export function CompressionGarmentChart({ data: rawData }: { data: any[] | null 
             });
         }
         
-        const maxCount = Math.max(...Object.values(garmentCounts), 1);
-        const maxDuration = Math.max(...Object.values(garmentDurations), 1);
-
-        return Object.keys(garmentCounts).map((subject) => ({
-            subject,
-            count: garmentCounts[subject],
-            duration: garmentDurations[subject],
-            fullMarkCount: maxCount,
-            fullMarkDuration: maxDuration,
+        return allGarmentTypes.map((type) => ({
+            name: type,
+            count: garmentCounts[type],
+            duration: garmentDurations[type],
         }));
 
     }, [rawData]);
 
-  return (
-    <ResponsiveContainer width="100%" height={300}>
-      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
-        <PolarGrid />
-        <PolarAngleAxis dataKey="subject" />
-        <PolarRadiusAxis angle={30} domain={[0, 'dataMax + 1']} />
-        <Radar name="Times Used" dataKey="count" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.6} />
-        <Radar name="Total Duration (hrs)" dataKey="duration" stroke="hsl(var(--chart-2))" fill="hsl(var(--chart-2))" fillOpacity={0.6} />
-        <Tooltip />
-        <Legend />
-      </RadarChart>
-    </ResponsiveContainer>
-  );
+    return (
+        <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data}>
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="name" tickLine={false} axisLine={false} />
+                <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--chart-1))" />
+                <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" />
+                <Tooltip />
+                <Legend />
+                <Bar yAxisId="left" dataKey="count" name="Times Used" fill="hsl(var(--chart-1))" radius={4} />
+                <Bar yAxisId="right" dataKey="duration" name="Total Duration (hrs)" fill="hsl(var(--chart-2))" radius={4} />
+            </BarChart>
+        </ResponsiveContainer>
+    );
 }
 
 
