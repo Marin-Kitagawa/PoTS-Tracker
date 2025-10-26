@@ -11,7 +11,8 @@ import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, addDocumentNonBlocking } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, serverTimestamp } from 'firebase/firestore';
+import { ActivityFeed } from '@/components/activity-feed';
 
 const symptoms = [
   "Dizziness",
@@ -35,8 +36,18 @@ const symptomSchema = z.object({
 
 type SymptomFormData = z.infer<typeof symptomSchema>;
 
+function logActivity(firestore: any, userId: string, type: string, description: string) {
+    if (!firestore || !userId) return;
+    const activityColRef = collection(firestore, `users/${userId}/activity_logs`);
+    addDocumentNonBlocking(activityColRef, {
+        type,
+        description,
+        timestamp: serverTimestamp()
+    });
+}
+
 function SymptomLogCard({ symptom, onLog }: { symptom: string, onLog: (data: SymptomFormData) => void }) {
-  const { control, handleSubmit, watch } = useForm<SymptomFormData>({
+  const { control, handleSubmit, watch, reset } = useForm<SymptomFormData>({
     resolver: zodResolver(symptomSchema),
     defaultValues: {
       symptom: symptom,
@@ -47,8 +58,13 @@ function SymptomLogCard({ symptom, onLog }: { symptom: string, onLog: (data: Sym
 
   const severity = watch('severity');
 
+  const onSubmit = (data: SymptomFormData) => {
+    onLog(data);
+    reset({ symptom: symptom, severity: 0, notes: '' });
+  };
+
   return (
-    <form onSubmit={handleSubmit(onLog)}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Card>
         <CardHeader>
           <CardTitle>{symptom}</CardTitle>
@@ -112,6 +128,8 @@ export default function SymptomsPage() {
     
     const collectionRef = collection(firestore, 'users', auth.currentUser.uid, 'symptom_logs');
     addDocumentNonBlocking(collectionRef, logData);
+    
+    logActivity(firestore, auth.currentUser.uid, 'Symptom', `Logged ${data.symptom} with severity ${data.severity}.`);
 
     toast({
       title: "Symptom Logged",
@@ -130,6 +148,7 @@ export default function SymptomsPage() {
           <SymptomLogCard key={symptom} symptom={symptom} onLog={handleLogSymptom} />
         ))}
       </div>
+      <ActivityFeed />
     </div>
   );
 }

@@ -156,18 +156,34 @@ export function ExerciseChart({ data: rawData }: { data: any[] | null }) {
   );
 }
 
+const allCountermeasures = [
+    'Squeeze rubber ball',
+    'Leg crossing with tensing',
+    'Muscle pumping (e.g., calf raises)',
+    'Squatting/Sitting/Lying down',
+  ];
+
 export function CountermeasuresChart({ data: rawData }: { data: any[] | null }) {
     const data = useMemo(() => {
-        if (!rawData) return [];
-        const countermeasureCounts = rawData.reduce((acc, log) => {
-            acc[log.countermeasureType] = (acc[log.countermeasureType] || 0) + 1;
+        const countermeasureCounts = allCountermeasures.reduce((acc, cm) => {
+            acc[cm] = 0;
             return acc;
         }, {} as Record<string, number>);
+
+        if (rawData) {
+            rawData.forEach(log => {
+                if (countermeasureCounts.hasOwnProperty(log.countermeasureType)) {
+                    countermeasureCounts[log.countermeasureType]++;
+                }
+            });
+        }
+        
+        const maxCount = Math.max(...Object.values(countermeasureCounts), 1);
 
         return Object.entries(countermeasureCounts).map(([subject, A]) => ({
             subject,
             A,
-            fullMark: 15,
+            fullMark: maxCount,
         }));
     }, [rawData]);
 
@@ -176,7 +192,7 @@ export function CountermeasuresChart({ data: rawData }: { data: any[] | null }) 
       <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
         <PolarGrid />
         <PolarAngleAxis dataKey="subject" />
-        <PolarRadiusAxis angle={30} domain={[0, 'dataMax + 5']} />
+        <PolarRadiusAxis angle={30} domain={[0, 'dataMax + 1']} />
         <Radar name="Times Used" dataKey="A" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.6} />
         <Tooltip />
         <Legend />

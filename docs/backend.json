@@ -42,6 +42,20 @@
         },
         "required": ["id", "userId", "symptom", "severity", "timestamp"]
     },
+    "ActivityLog": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "ActivityLog",
+        "type": "object",
+        "description": "Represents a single entry in the user's activity feed.",
+        "properties": {
+            "id": { "type": "string" },
+            "userId": { "type": "string" },
+            "type": { "type": "string" },
+            "description": { "type": "string" },
+            "timestamp": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "userId", "type", "description", "timestamp"]
+    },
     "ExerciseLog": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ExerciseLog",
@@ -290,6 +304,18 @@
           "params": [
             {"name": "userId", "description": "The unique identifier for the user."},
             {"name": "symptomLogId", "description": "The unique identifier for the symptom log entry."}
+          ]
+        }
+      },
+       {
+        "path": "/users/{userId}/activity_logs/{activityLogId}",
+        "definition": {
+          "entityName": "ActivityLog",
+          "schema": { "$ref": "#/backend/entities/ActivityLog" },
+          "description": "Stores activity log entries for a specific user's feed.",
+          "params": [
+            {"name": "userId", "description": "The unique identifier for the user."},
+            {"name": "activityLogId", "description": "The unique identifier for the activity log entry."}
           ]
         }
       },

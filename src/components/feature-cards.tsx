@@ -16,6 +16,17 @@ import { useAuth, useFirestore, useUser, addDocumentNonBlocking, setDocumentNonB
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isSameDay } from 'date-fns';
+import { ActivityFeed } from './activity-feed';
+
+function logActivity(firestore: any, userId: string, type: string, description: string) {
+    if (!firestore || !userId) return;
+    const activityColRef = collection(firestore, `users/${userId}/activity_logs`);
+    addDocumentNonBlocking(activityColRef, {
+        type,
+        description,
+        timestamp: serverTimestamp()
+    });
+}
 
 export function ExerciseTrackingCard() {
   const { toast } = useToast();
@@ -46,6 +57,7 @@ export function ExerciseTrackingCard() {
 
     const collectionRef = collection(firestore, `users/${user.uid}/exercise_logs`);
     addDocumentNonBlocking(collectionRef, logData);
+    logActivity(firestore, user.uid, 'Exercise', `Logged ${duration} minutes of ${exerciseType}.`);
     toast({ title: "Exercise Logged", description: `You've logged a ${duration}-minute session.` });
   };
 
@@ -113,6 +125,8 @@ export function VolumeExpansionCard() {
     };
     const collectionRef = collection(firestore, `users/${user.uid}/volume_expansion_logs`);
     addDocumentNonBlocking(collectionRef, logData);
+    if (sodium > 0) logActivity(firestore, user.uid, 'Intake', `Logged ${sodium}g of sodium.`);
+    if (fluid > 0) logActivity(firestore, user.uid, 'Intake', `Logged ${fluid}ml of fluid.`);
     toast({ title: "Intake Logged", description: `Sodium: ${sodium}g, Fluid: ${fluid / 1000}L` });
   };
 
@@ -190,6 +204,8 @@ export function SleepLoggingCard() {
         };
 
         setDocumentNonBlocking(docRef, logData, { merge: true });
+        const activityDescription = `Logged elevated head sleep for ${format(date, 'PPP')}: ${!isAlreadyLogged ? "Yes" : "No"}`;
+        logActivity(firestore, user.uid, 'Sleep', activityDescription);
         toast({ title: "Sleep Log Updated", description: `Head elevated on ${format(date, 'PPP')}: ${!isAlreadyLogged ? "Yes" : "No"}` });
     };
     
@@ -245,6 +261,7 @@ export function SleepLoggingCard() {
         };
         const collectionRef = collection(firestore, `users/${user.uid}/compression_garment_logs`);
         addDocumentNonBlocking(collectionRef, logData);
+        logActivity(firestore, user.uid, 'Compression', `Logged ${duration} hours of ${garmentType} garment use.`);
         toast({ title: "Compression Use Logged" });
     }
 
@@ -308,6 +325,8 @@ export function SleepLoggingCard() {
       const collectionRef = collection(firestore, `users/${user.uid}/physical_countermeasure_logs`);
       addDocumentNonBlocking(collectionRef, logData);
 
+      logActivity(firestore, user.uid, 'Countermeasure', `Logged ${duration} minutes of ${name}.`);
+
       toast({ title: "Countermeasure Logged", description: `${name} for ${duration} minutes.` });
     };
 
@@ -364,6 +383,7 @@ export function SleepLoggingCard() {
         const collectionRef = collection(firestore, `users/${user.uid}/skin_surface_cooling_logs`);
         addDocumentNonBlocking(collectionRef, logData);
 
+        logActivity(firestore, user.uid, 'Skin Cooling', `Logged ${coolingMethod} for skin cooling, ${frequency} time(s).`);
         toast({ title: "Skin Cooling Logged" });
     };
 
@@ -405,5 +425,3 @@ export function SleepLoggingCard() {
       </Card>
     );
   }
-
-
