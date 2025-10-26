@@ -1,3 +1,6 @@
+'use client';
+
+import { useMemo } from 'react';
 import DashboardHeader from '@/components/dashboard-header';
 import {
   SymptomsChart,
@@ -6,12 +9,38 @@ import {
   CountermeasuresChart,
 } from '@/components/charts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Home } from 'lucide-react';
 import AppSidebar from '@/components/app-sidebar';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 export default function DashboardPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const symptomLogsRef = useMemoFirebase(() => 
+    user ? collection(firestore, `users/${user.uid}/symptom_logs`) : null,
+    [user, firestore]
+  );
+  const { data: symptomLogs } = useCollection(symptomLogsRef);
+
+  const intakeLogsRef = useMemoFirebase(() =>
+    user ? collection(firestore, `users/${user.uid}/volume_expansion_logs`) : null,
+    [user, firestore]
+  );
+  const { data: intakeLogs } = useCollection(intakeLogsRef);
+
+  const exerciseLogsRef = useMemoFirebase(() =>
+    user ? collection(firestore, `users/${user.uid}/exercise_logs`) : null,
+    [user, firestore]
+  );
+  const { data: exerciseLogs } = useCollection(exerciseLogsRef);
+
+  const countermeasuresLogsRef = useMemoFirebase(() =>
+    user ? collection(firestore, `users/${user.uid}/physical_countermeasure_logs`) : null,
+    [user, firestore]
+  );
+  const { data: countermeasuresLogs } = useCollection(countermeasuresLogsRef);
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <AppSidebar />
@@ -25,7 +54,7 @@ export default function DashboardPage() {
                   <CardTitle>Symptom Severity Over Time</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <SymptomsChart />
+                  <SymptomsChart data={symptomLogs} />
                 </CardContent>
               </Card>
               <Card>
@@ -33,7 +62,7 @@ export default function DashboardPage() {
                   <CardTitle>Daily Intake Goals</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <IntakeChart />
+                  <IntakeChart data={intakeLogs} />
                 </CardContent>
               </Card>
               <Card>
@@ -41,15 +70,15 @@ export default function DashboardPage() {
                   <CardTitle>Exercise Type Distribution</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ExerciseChart />
+                  <ExerciseChart data={exerciseLogs} />
                 </CardContent>
               </Card>
               <Card className="col-span-1 lg:col-span-2">
                 <CardHeader>
-                  <CardTitle>Physical Countermeasures Effectiveness</CardTitle>
+                  <CardTitle>Physical Countermeasures Usage</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CountermeasuresChart />
+                  <CountermeasuresChart data={countermeasuresLogs} />
                 </CardContent>
               </Card>
             </div>

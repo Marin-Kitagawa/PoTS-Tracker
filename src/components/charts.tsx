@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -21,37 +22,58 @@ import {
   Radar,
 } from 'recharts';
 import { ChartConfig, ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-
-const symptomData = [
-  { date: 'Mon', dizziness: 4, fatigue: 5, heartRate: 7 },
-  { date: 'Tue', dizziness: 3, fatigue: 4, heartRate: 6 },
-  { date: 'Wed', dizziness: 5, fatigue: 6, heartRate: 8 },
-  { date: 'Thu', dizziness: 4, fatigue: 5, heartRate: 7 },
-  { date: 'Fri', dizziness: 2, fatigue: 3, heartRate: 5 },
-  { date: 'Sat', dizziness: 3, fatigue: 4, heartRate: 6 },
-  { date: 'Sun', dizziness: 1, fatigue: 2, heartRate: 4 },
-];
+import { format } from 'date-fns';
 
 const symptomsChartConfig = {
-  dizziness: {
-    label: 'Dizziness',
-    color: 'hsl(var(--chart-1))',
-  },
-  fatigue: {
-    label: 'Fatigue',
-    color: 'hsl(var(--chart-2))',
-  },
-  heartRate: {
-    label: 'High Heart Rate',
-    color: 'hsl(var(--chart-3))',
-  },
+  dizziness: { label: 'Dizziness', color: 'hsl(var(--chart-1))' },
+  lightheadedness: { label: 'Lightheadedness', color: 'hsl(var(--chart-2))' },
+  tachycardia: { label: 'Tachycardia', color: 'hsl(var(--chart-3))' },
+  fatigue: { label: 'Fatigue', color: 'hsl(var(--chart-4))' },
+  brainFog: { label: 'Brain Fog', color: 'hsl(var(--chart-5))' },
+  palpitations: { label: 'Palpitations', color: 'hsl(var(--chart-1))' },
+  headache: { label: 'Headache', color: 'hsl(var(--chart-2))' },
+  nausea: { label: 'Nausea', color: 'hsl(var(--chart-3))' },
+  shortnessOfBreath: { label: 'Shortness of Breath', color: 'hsl(var(--chart-4))' },
+  tremulousness: { label: 'Tremulousness', color: 'hsl(var(--chart-5))' },
+  visualDisturbances: { label: 'Visual Disturbances', color: 'hsl(var(--chart-1))' },
 } satisfies ChartConfig;
 
-export function SymptomsChart() {
+export function SymptomsChart({ data: rawData }: { data: any[] | null }) {
+  const { data, chartConfig } = useMemo(() => {
+    if (!rawData) return { data: [], chartConfig: {} };
+
+    const processedData = rawData
+        .sort((a, b) => a.timestamp.toDate() - b.timestamp.toDate())
+        .map(log => ({
+            date: format(log.timestamp.toDate(), 'MMM d'),
+            symptom: log.symptom,
+            severity: log.severity,
+        }));
+        
+    const groupedByDate = processedData.reduce((acc, curr) => {
+        (acc[curr.date] = acc[curr.date] || { date: curr.date })[curr.symptom] = curr.severity;
+        return acc;
+    }, {} as Record<string, any>);
+
+    const uniqueSymptoms = [...new Set(processedData.map(d => d.symptom))];
+    const camelCaseSymptoms = uniqueSymptoms.map(s => s.replace(/\s+/g, '').replace(/^\w/, c => c.toLowerCase()));
+
+    const dynamicChartConfig = camelCaseSymptoms.reduce((acc, symptom, index) => {
+        const originalSymptomName = uniqueSymptoms[index];
+        acc[symptom] = {
+            label: originalSymptomName,
+            color: `hsl(var(--chart-${(index % 5) + 1}))`,
+        };
+        return acc;
+    }, {} as ChartConfig);
+
+    return { data: Object.values(groupedByDate), chartConfig: dynamicChartConfig };
+  }, [rawData]);
+
   return (
-    <ChartContainer config={symptomsChartConfig} className="min-h-[200px] w-full">
+    <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={symptomData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+        <LineChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
           <YAxis
@@ -59,53 +81,71 @@ export function SymptomsChart() {
             axisLine={false}
             tickMargin={8}
             domain={[0, 10]}
-            label={{ value: 'Severity (1-10)', angle: -90, position: 'insideLeft', offset: 10 }}
+            label={{ value: 'Severity (0-10)', angle: -90, position: 'insideLeft', offset: 10 }}
           />
           <Tooltip content={<ChartTooltipContent />} />
           <Legend />
-          <Line type="monotone" dataKey="dizziness" stroke="var(--color-dizziness)" strokeWidth={2} dot={false} />
-          <Line type="monotone" dataKey="fatigue" stroke="var(--color-fatigue)" strokeWidth={2} dot={false} />
-          <Line type="monotone" dataKey="heartRate" stroke="var(--color-heartRate)" strokeWidth={2} dot={false} />
+          {Object.keys(chartConfig).map((symptomKey) => (
+             <Line key={symptomKey} type="monotone" dataKey={symptomKey.replace(/\s+/g, '').replace(/^\w/, c => c.toLowerCase())} stroke={`var(--color-${symptomKey})`} strokeWidth={2} dot={false} name={chartConfig[symptomKey].label} />
+          ))}
         </LineChart>
       </ResponsiveContainer>
     </ChartContainer>
   );
 }
 
-const intakeData = [
-  { name: 'Sodium', actual: 8, goal: 10, fill: 'hsl(var(--chart-1))' },
-  { name: 'Fluid', actual: 2.5, goal: 3, fill: 'hsl(var(--chart-2))' },
-];
+export function IntakeChart({ data: rawData }: { data: any[] | null }) {
+    const data = useMemo(() => {
+        if (!rawData || rawData.length === 0) {
+             return [
+                { name: 'Sodium', actual: 0, goal: 10 },
+                { name: 'Fluid', actual: 0, goal: 3 },
+            ];
+        }
+        const latestLog = rawData.sort((a,b) => b.date.toMillis() - a.date.toMillis())[0];
+        return [
+            { name: 'Sodium', actual: latestLog.saltIntake, goal: 10 },
+            { name: 'Fluid', actual: latestLog.fluidIntake / 1000, goal: 3 },
+        ];
+    }, [rawData]);
 
-export function IntakeChart() {
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={intakeData} layout="vertical" margin={{ left: 10 }}>
+      <BarChart data={data} layout="vertical" margin={{ left: 10 }}>
         <CartesianGrid horizontal={false} />
         <XAxis type="number" />
         <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={60} />
         <Tooltip />
         <Legend />
-        <Bar dataKey="actual" name="Actual" fill="currentColor" radius={4} className="fill-primary" />
+        <Bar dataKey="actual" name="Actual" fill="hsl(var(--primary))" radius={4} />
         <Bar dataKey="goal" name="Goal" fill="hsl(var(--muted))" radius={4} />
       </BarChart>
     </ResponsiveContainer>
   );
 }
 
-const exerciseData = [
-  { name: 'Horizontal', value: 400, fill: 'hsl(var(--chart-1))' },
-  { name: 'Upright', value: 300, fill: 'hsl(var(--chart-2))' },
-];
+const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
 
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))'];
+export function ExerciseChart({ data: rawData }: { data: any[] | null }) {
+    const data = useMemo(() => {
+        if (!rawData) return [];
+        const exerciseCounts = rawData.reduce((acc, log) => {
+            acc[log.exerciseType] = (acc[log.exerciseType] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
 
-export function ExerciseChart() {
+        return Object.entries(exerciseCounts).map(([name, value]) => ({
+            name,
+            value,
+        }));
+
+    }, [rawData]);
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <PieChart>
-        <Pie data={exerciseData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-          {exerciseData.map((entry, index) => (
+        <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+          {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
@@ -116,22 +156,28 @@ export function ExerciseChart() {
   );
 }
 
-const countermeasureData = [
-  { subject: 'Squeezing Ball', A: 8, fullMark: 10 },
-  { subject: 'Leg Crossing', A: 7, fullMark: 10 },
-  { subject: 'Muscle Pumping', A: 9, fullMark: 10 },
-  { subject: 'Squatting', A: 6, fullMark: 10 },
-  { subject: 'Cough CPR', A: 4, fullMark: 10 },
-];
+export function CountermeasuresChart({ data: rawData }: { data: any[] | null }) {
+    const data = useMemo(() => {
+        if (!rawData) return [];
+        const countermeasureCounts = rawData.reduce((acc, log) => {
+            acc[log.countermeasureType] = (acc[log.countermeasureType] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
 
-export function CountermeasuresChart() {
+        return Object.entries(countermeasureCounts).map(([subject, A]) => ({
+            subject,
+            A,
+            fullMark: 15,
+        }));
+    }, [rawData]);
+
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={countermeasureData}>
+      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
         <PolarGrid />
         <PolarAngleAxis dataKey="subject" />
-        <PolarRadiusAxis angle={30} domain={[0, 10]} />
-        <Radar name="Effectiveness" dataKey="A" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.6} />
+        <PolarRadiusAxis angle={30} domain={[0, 'dataMax + 5']} />
+        <Radar name="Times Used" dataKey="A" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.6} />
         <Tooltip />
         <Legend />
       </RadarChart>
