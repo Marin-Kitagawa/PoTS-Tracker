@@ -157,10 +157,13 @@ export function ExerciseChart({ data: rawData }: { data: any[] | null }) {
 }
 
 const allCountermeasures = [
-    'Squeeze rubber ball',
-    'Leg crossing with tensing',
-    'Muscle pumping (e.g., calf raises)',
-    'Squatting/Sitting/Lying down',
+    'Squeeze a rubber ball',
+    'Leg crossing + muscle tensing',
+    'Muscle pumping (swaying/tiptoeing)',
+    'Squatting / sitting / lying down',
+    'Cough CPR (forceful coughing)',
+    'Negative-pressure breathing (ITD device)',
+    'Skin surface cooling'
   ];
 
 export function CountermeasuresChart({ data: rawData }: { data: any[] | null }) {

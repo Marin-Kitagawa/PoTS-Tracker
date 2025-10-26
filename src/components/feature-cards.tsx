@@ -297,10 +297,13 @@ export function SleepLoggingCard() {
   }
   
   const countermeasures = [
-    { id: 'squeeze', name: 'Squeeze rubber ball' },
-    { id: 'leg-cross', name: 'Leg crossing with tensing' },
-    { id: 'pump', name: 'Muscle pumping (e.g., calf raises)' },
-    { id: 'squat', name: 'Squatting/Sitting/Lying down' },
+    { id: 'squeeze', name: 'Squeeze a rubber ball' },
+    { id: 'leg-cross', name: 'Leg crossing + muscle tensing' },
+    { id: 'pump', name: 'Muscle pumping (swaying/tiptoeing)' },
+    { id: 'squat', name: 'Squatting / sitting / lying down' },
+    { id: 'cough-cpr', name: 'Cough CPR (forceful coughing)' },
+    { id: 'breathing', name: 'Negative-pressure breathing (ITD device)'},
+    { id: 'cooling', name: 'Skin surface cooling'}
   ];
   
   export function CountermeasuresCard() {
