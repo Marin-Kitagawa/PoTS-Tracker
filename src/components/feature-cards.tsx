@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,6 +34,7 @@ export function ExerciseTrackingCard() {
   const firestore = useFirestore();
 
   const [exerciseType, setExerciseType] = useState('');
+  const [otherExercise, setOtherExercise] = useState('');
   const [duration, setDuration] = useState(30);
   const [rpe, setRpe] = useState(4);
   
@@ -42,14 +43,17 @@ export function ExerciseTrackingCard() {
       toast({ variant: 'destructive', title: "Not Authenticated" });
       return;
     }
-    if (!exerciseType) {
-        toast({ variant: 'destructive', title: "Please select an exercise type." });
+    
+    const finalExerciseType = exerciseType === 'other' ? otherExercise : exerciseType;
+
+    if (!finalExerciseType) {
+        toast({ variant: 'destructive', title: "Please select or enter an exercise type." });
         return;
     }
 
     const logData = {
         userProfileId: user.uid,
-        exerciseType,
+        exerciseType: finalExerciseType,
         duration,
         rpe,
         date: serverTimestamp(),
@@ -57,8 +61,14 @@ export function ExerciseTrackingCard() {
 
     const collectionRef = collection(firestore, `users/${user.uid}/exercise_logs`);
     addDocumentNonBlocking(collectionRef, logData);
-    logActivity(firestore, user.uid, 'Exercise', `Logged ${duration} minutes of ${exerciseType}.`);
+    logActivity(firestore, user.uid, 'Exercise', `Logged ${duration} minutes of ${finalExerciseType}.`);
     toast({ title: "Exercise Logged", description: `You've logged a ${duration}-minute session.` });
+    
+    // Reset fields
+    setExerciseType('');
+    setOtherExercise('');
+    setDuration(30);
+    setRpe(4);
   };
 
 
@@ -77,12 +87,46 @@ export function ExerciseTrackingCard() {
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="horizontal">Horizontal (e.g., rowing, swimming)</SelectItem>
-                <SelectItem value="upright">Upright (e.g., walking, cycling)</SelectItem>
-                <SelectItem value="resistance">Resistance Training</SelectItem>
+                <SelectGroup>
+                  <SelectLabel>Endurance (Horizontal)</SelectLabel>
+                  <SelectItem value="Rowing">Rowing</SelectItem>
+                  <SelectItem value="Swimming">Swimming</SelectItem>
+                  <SelectItem value="Recumbent Cycling">Recumbent Cycling</SelectItem>
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Endurance (Upright)</SelectLabel>
+                  <SelectItem value="Treadmill Walking">Treadmill Walking</SelectItem>
+                  <SelectItem value="Walking">Walking</SelectItem>
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Resistance (Legs & Core)</SelectLabel>
+                  <SelectItem value="Seated Leg Press">Seated Leg Press</SelectItem>
+                  <SelectItem value="Seated Leg Curl">Seated Leg Curl</SelectItem>
+                  <SelectItem value="Seated Leg Extension">Seated Leg Extension</SelectItem>
+                  <SelectItem value="Calf Raises">Calf Raises</SelectItem>
+                  <SelectItem value="Core Exercises (e.g., Planks)">Core Exercises (e.g., Planks)</SelectItem>
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Other</SelectLabel>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectGroup>
               </SelectContent>
             </Select>
           </div>
+
+          {exerciseType === 'other' && (
+            <div className="space-y-2">
+              <Label htmlFor="other-exercise">Custom Exercise Name</Label>
+              <Input 
+                id="other-exercise" 
+                type="text" 
+                value={otherExercise} 
+                onChange={(e) => setOtherExercise(e.target.value)} 
+                placeholder="e.g., Yoga" 
+              />
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="duration">Duration (minutes)</Label>
             <Input id="duration" type="number" value={duration} onChange={(e) => setDuration(Number(e.target.value))} placeholder="e.g., 30" />
@@ -279,8 +323,8 @@ export function SleepLoggingCard() {
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="abdomen">Abdomen-high</SelectItem>
-                <SelectItem value="full-lower">Full-lower-body</SelectItem>
+                <SelectItem value="abdomen-high">Abdomen-high</SelectItem>
+                <SelectItem value="full-lower-body">Full-lower-body</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -298,7 +342,7 @@ export function SleepLoggingCard() {
   
   const countermeasures = [
     { id: 'squeeze', name: 'Squeeze a rubber ball' },
-    { id: 'leg-cross', name: 'Leg crossing + muscle tensing' },
+    { id: 'leg-cross', name: 'Leg crossing with tensing' },
     { id: 'pump', name: 'Muscle pumping (swaying/tiptoeing)' },
     { id: 'squat', name: 'Squatting / sitting / lying down' },
     { id: 'cough-cpr', name: 'Cough CPR (forceful coughing)' },
