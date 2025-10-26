@@ -12,7 +12,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirestore, useUser, addDocumentNonBlocking, setDocumentNonBlocking, useCollection } from '@/firebase';
+import { useAuth, useFirestore, useUser, addDocumentNonBlocking, setDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isSameDay } from 'date-fns';
@@ -160,7 +160,7 @@ export function SleepLoggingCard() {
     const { user } = useUser();
     const firestore = useFirestore();
 
-    const collectionRef = useMemo(() => {
+    const collectionRef = useMemoFirebase(() => {
         if (!user) return null;
         return collection(firestore, `users/${user.uid}/sleep_position_logs`);
     }, [user, firestore]);
@@ -405,4 +405,5 @@ export function SleepLoggingCard() {
       </Card>
     );
   }
+
 
