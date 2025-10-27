@@ -111,7 +111,7 @@ export default function AllActivityPage() {
     const { user } = useUser();
     const firestore = useFirestore();
 
-    const [typeFilter, setTypeFilter] = useState<string>('');
+    const [typeFilter, setTypeFilter] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
     
@@ -149,7 +149,7 @@ export default function AllActivityPage() {
     const filteredLogs = useMemo(() => {
         return allLogs.filter(log => {
             // Type filter
-            if (typeFilter && log.type !== typeFilter) {
+            if (typeFilter && typeFilter !== 'all' && log.type !== typeFilter) {
                 return false;
             }
             // Search term filter
@@ -190,7 +190,7 @@ export default function AllActivityPage() {
                                 <SelectValue placeholder="Filter by type" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="">All Types</SelectItem>
+                                <SelectItem value="all">All Types</SelectItem>
                                 {activityTypes.map(type => (
                                     <SelectItem key={type} value={type}>{type}</SelectItem>
                                 ))}
@@ -261,5 +261,3 @@ export default function AllActivityPage() {
         </div>
     );
 }
-
-    
