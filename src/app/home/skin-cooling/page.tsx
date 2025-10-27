@@ -13,7 +13,7 @@ export default function SkinCoolingPage() {
           </div>
         <SkinCoolingCard />
       </div>
-      <ActivityFeed />
+      <ActivityFeed filterType="Skin Cooling" />
     </>
   );
 }

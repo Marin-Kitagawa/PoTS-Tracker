@@ -2,7 +2,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Activity } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 
@@ -14,6 +14,7 @@ const features = [
   { title: "Compression Garments", href: "/home/compression", description: "Keep track of garment type and duration." },
   { title: "Countermeasures", href: "/home/countermeasures", description: "Record physical countermeasure use." },
   { title: "Skin Cooling", href: "/home/skin-cooling", description: "Log skin surface cooling methods." },
+  { title: "All Activity", href: "/home/activity", description: "View and filter all your logged activities." },
   { title: "Profile", href: "/home/profile", description: "Manage your profile and account settings." },
 ];
 

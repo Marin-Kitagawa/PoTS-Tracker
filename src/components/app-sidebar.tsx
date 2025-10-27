@@ -13,6 +13,7 @@ import {
   HeartPulse,
   LogOut,
   User,
+  History
 } from 'lucide-react';
 import {
   Tooltip,
@@ -33,6 +34,7 @@ const sidebarNavItems = [
   { href: '/home/compression', icon: Layers, label: 'Compression' },
   { href: '/home/countermeasures', icon: Activity, label: 'Countermeasures' },
   { href: '/home/skin-cooling', icon: Snowflake, label: 'Skin Cooling' },
+  { href: '/home/activity', icon: History, label: 'All Activity' },
 ];
 
 export default function AppSidebar() {

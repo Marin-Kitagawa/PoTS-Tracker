@@ -2,20 +2,26 @@
 
 import { useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { collection, query, orderBy, limit, where, QueryConstraint } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 
-export function ActivityFeed() {
+export function ActivityFeed({ filterType }: { filterType?: string }) {
     const { user } = useUser();
     const firestore = useFirestore();
 
-    const activityLogsRef = useMemoFirebase(() => 
-        user ? query(collection(firestore, `users/${user.uid}/activity_logs`), orderBy('timestamp', 'desc'), limit(20)) : null,
-        [user, firestore]
-    );
+    const activityLogsRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+
+        const constraints: QueryConstraint[] = [orderBy('timestamp', 'desc'), limit(20)];
+        if (filterType) {
+            constraints.push(where('type', '==', filterType));
+        }
+
+        return query(collection(firestore, `users/${user.uid}/activity_logs`), ...constraints);
+    }, [user, firestore, filterType]);
 
     const { data: activityLogs } = useCollection(activityLogsRef);
 
@@ -24,6 +30,10 @@ export function ActivityFeed() {
             case 'Symptom': return 'destructive';
             case 'Exercise': return 'default';
             case 'Intake': return 'secondary';
+            case 'Sleep': return 'default';
+            case 'Compression': return 'secondary';
+            case 'Countermeasure': return 'default';
+            case 'Skin Cooling': return 'secondary';
             default: return 'outline';
         }
     }
@@ -31,7 +41,7 @@ export function ActivityFeed() {
     return (
         <Card className="mt-8">
             <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
+                <CardTitle>Recent {filterType || ''} Activity</CardTitle>
             </CardHeader>
             <CardContent>
                 <ScrollArea className="h-72">

@@ -12,7 +12,7 @@ export default function ExercisePage() {
           </div>
         <ExerciseTrackingCard />
       </div>
-      <ActivityFeed />
+      <ActivityFeed filterType="Exercise" />
     </>
   );
 }

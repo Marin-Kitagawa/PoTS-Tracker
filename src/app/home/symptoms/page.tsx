@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -148,7 +148,7 @@ export default function SymptomsPage() {
           <SymptomLogCard key={symptom} symptom={symptom} onLog={handleLogSymptom} />
         ))}
       </div>
-      <ActivityFeed />
+      <ActivityFeed filterType="Symptom" />
     </div>
   );
 }

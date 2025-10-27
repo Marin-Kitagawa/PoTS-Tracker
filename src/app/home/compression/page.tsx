@@ -13,7 +13,7 @@ export default function CompressionPage() {
           </div>
         <CompressionTrackingCard />
       </div>
-      <ActivityFeed />
+      <ActivityFeed filterType="Compression" />
     </>
   );
 }

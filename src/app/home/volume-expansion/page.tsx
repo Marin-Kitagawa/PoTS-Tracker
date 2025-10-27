@@ -13,7 +13,7 @@ export default function VolumeExpansionPage() {
           </div>
         <VolumeExpansionCard />
       </div>
-      <ActivityFeed />
+      <ActivityFeed filterType="Intake" />
     </>
   );
 }

@@ -13,7 +13,7 @@ export default function SleepPositionPage() {
           </div>
         <SleepLoggingCard />
       </div>
-      <ActivityFeed />
+      <ActivityFeed filterType="Sleep" />
     </>
   );
 }
