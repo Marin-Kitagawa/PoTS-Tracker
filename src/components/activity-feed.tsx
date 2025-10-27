@@ -1,12 +1,14 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // This map helps us find the right collection name for a given type
 const collectionMap: Record<string, string> = {
@@ -98,29 +100,37 @@ export function ActivityFeed({ filterType }: { filterType?: string }) {
     const { user } = useUser();
     const firestore = useFirestore();
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(5);
+
     const activityLogsRef = useMemoFirebase(() => {
         if (!user || !firestore || !filterType) return null;
 
         const collectionName = collectionMap[filterType];
         if (!collectionName) return null;
         
-        // Determine the correct date field for ordering
         let dateField = 'timestamp'; // default
         if (['Exercise', 'Intake', 'Sleep', 'Compression', 'Skin Cooling'].includes(filterType)) {
             dateField = 'date';
         }
 
-        return query(collection(firestore, `users/${user.uid}/${collectionName}`), orderBy(dateField, 'desc'), limit(5));
+        return query(collection(firestore, `users/${user.uid}/${collectionName}`), orderBy(dateField, 'desc'));
 
     }, [user, firestore, filterType]);
 
-    const { data: activityLogs } = useCollection(activityLogsRef);
+    const { data: activityLogs, isLoading } = useCollection(activityLogsRef);
 
     const normalizedLogs = useMemo(() => {
         if (!activityLogs || !filterType) return [];
         return activityLogs.map(log => normalizeLog(log, filterType)).filter(Boolean) as NormalizedLog[];
     }, [activityLogs, filterType]);
 
+    const totalPages = Math.ceil(normalizedLogs.length / itemsPerPage);
+    const paginatedLogs = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return normalizedLogs.slice(startIndex, endIndex);
+    }, [normalizedLogs, currentPage, itemsPerPage]);
 
     const getBadgeVariant = (type: string) => {
         switch(type) {
@@ -143,8 +153,9 @@ export function ActivityFeed({ filterType }: { filterType?: string }) {
             <CardContent>
                 <ScrollArea className="h-72">
                     <div className="space-y-4">
-                        {normalizedLogs && normalizedLogs.length > 0 ? (
-                            normalizedLogs.map(log => (
+                        {isLoading && <p className="text-muted-foreground text-center">Loading activity...</p>}
+                        {!isLoading && paginatedLogs && paginatedLogs.length > 0 ? (
+                            paginatedLogs.map(log => (
                                 <div key={log.id} className="flex items-start gap-4">
                                     <div className="flex-1">
                                         <div className="flex items-center justify-between">
@@ -158,13 +169,50 @@ export function ActivityFeed({ filterType }: { filterType?: string }) {
                                 </div>
                             ))
                         ) : (
-                            <p className="text-muted-foreground text-center">No activity logged yet.</p>
+                           !isLoading && <p className="text-muted-foreground text-center py-8">No activity logged yet.</p>
                         )}
                     </div>
                 </ScrollArea>
             </CardContent>
+             <CardFooter className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <Select value={String(itemsPerPage)} onValueChange={(value) => { setItemsPerPage(Number(value)); setCurrentPage(1); }}>
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue placeholder="Results" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="5">5</SelectItem>
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="20">20</SelectItem>
+                            <SelectItem value="50">50</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground">
+                        Results per page
+                    </p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-sm text-muted-foreground">
+                        Page {currentPage} of {totalPages > 0 ? totalPages : 1}
+                    </span>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            </CardFooter>
         </Card>
     )
 }
-
-    
