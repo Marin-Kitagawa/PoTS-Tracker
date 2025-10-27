@@ -14,7 +14,7 @@ const features = [
   { title: "Compression Garments", href: "/home/compression", description: "Keep track of garment type and duration." },
   { title: "Countermeasures", href: "/home/countermeasures", description: "Record physical countermeasure use." },
   { title: "Skin Cooling", href: "/home/skin-cooling", description: "Log skin surface cooling methods." },
-  { title: "All Activity", href: "/home/activity", description: "View and filter all your logged activities." },
+  { title: "All Activities", href: "/home/activity", description: "View and filter all your logged activities." },
   { title: "Profile", href: "/home/profile", description: "Manage your profile and account settings." },
 ];
 

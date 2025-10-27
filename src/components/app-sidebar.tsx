@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 const sidebarNavItems = [
   { href: '/home', icon: Home, label: 'Home' },
   { href: '/dashboard', icon: LineChart, label: 'Dashboard' },
+  { href: '/home/activity', icon: History, label: 'All Activities' },
   { href: '/home/symptoms', icon: HeartPulse, label: 'Symptoms' },
   { href: '/home/exercise', icon: Dumbbell, label: 'Exercise' },
   { href: '/home/volume-expansion', icon: GlassWater, label: 'Volume Expansion' },
@@ -34,7 +35,6 @@ const sidebarNavItems = [
   { href: '/home/compression', icon: Layers, label: 'Compression' },
   { href: '/home/countermeasures', icon: Activity, label: 'Countermeasures' },
   { href: '/home/skin-cooling', icon: Snowflake, label: 'Skin Cooling' },
-  { href: '/home/activity', icon: History, label: 'All Activity' },
 ];
 
 export default function AppSidebar() {

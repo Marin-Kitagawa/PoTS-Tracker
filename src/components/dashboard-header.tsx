@@ -19,7 +19,7 @@ const mobileNavItems = [
   { href: '/home/compression', label: 'Compression' },
   { href: '/home/countermeasures', label: 'Countermeasures' },
   { href: '/home/skin-cooling', label: 'Skin Cooling' },
-  { href: '/home/activity', label: 'All Activity' },
+  { href: '/home/activity', label: 'All Activities' },
   { href: '/home/profile', label: 'Profile' },
 ];
 

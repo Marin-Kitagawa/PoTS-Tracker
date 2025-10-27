@@ -170,7 +170,7 @@ export default function AllActivityPage() {
     return (
         <div>
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-foreground">All Activity</h1>
+                <h1 className="text-3xl font-bold text-foreground">All Activities</h1>
                 <p className="text-muted-foreground">View, filter, and search all your logged activities.</p>
             </div>
 
