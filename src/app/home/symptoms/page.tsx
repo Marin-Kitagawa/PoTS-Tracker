@@ -36,16 +36,6 @@ const symptomSchema = z.object({
 
 type SymptomFormData = z.infer<typeof symptomSchema>;
 
-function logActivity(firestore: any, userId: string, type: string, description: string) {
-    if (!firestore || !userId) return;
-    const activityColRef = collection(firestore, `users/${userId}/activity_logs`);
-    addDocumentNonBlocking(activityColRef, {
-        type,
-        description,
-        timestamp: serverTimestamp()
-    });
-}
-
 function SymptomLogCard({ symptom, onLog }: { symptom: string, onLog: (data: SymptomFormData) => void }) {
   const { control, handleSubmit, watch, reset } = useForm<SymptomFormData>({
     resolver: zodResolver(symptomSchema),
@@ -111,7 +101,7 @@ export default function SymptomsPage() {
   const firestore = useFirestore();
 
   const handleLogSymptom = (data: SymptomFormData) => {
-    if (!auth.currentUser) {
+    if (!auth.currentUser || !firestore) {
       toast({
         variant: "destructive",
         title: "Not authenticated",
@@ -123,14 +113,12 @@ export default function SymptomsPage() {
     const logData = {
       ...data,
       userId: auth.currentUser.uid,
-      timestamp: new Date(),
+      timestamp: serverTimestamp(),
     };
     
     const collectionRef = collection(firestore, 'users', auth.currentUser.uid, 'symptom_logs');
     addDocumentNonBlocking(collectionRef, logData);
     
-    logActivity(firestore, auth.currentUser.uid, 'Symptom', `Logged ${data.symptom} with severity ${data.severity}.`);
-
     toast({
       title: "Symptom Logged",
       description: `${data.symptom} was logged with severity ${data.severity}.`,
@@ -152,3 +140,5 @@ export default function SymptomsPage() {
     </div>
   );
 }
+
+    
