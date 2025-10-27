@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, formatDistanceToNow, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
@@ -107,13 +107,15 @@ type NormalizedLog = {
     timestamp: Date;
 }
 
-export default function AllActivityPage() {
+export default function AllActivitiesPage() {
     const { user } = useUser();
     const firestore = useFirestore();
 
     const [typeFilter, setTypeFilter] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     
     // Fetch from all collections
     const { data: symptomLogs } = useCollection(useMemoFirebase(() => user ? collection(firestore, 'users', user.uid, collectionMap.Symptom) : null, [user, firestore]));
@@ -166,6 +168,19 @@ export default function AllActivityPage() {
             return true;
         });
     }, [allLogs, typeFilter, searchTerm, dateRange]);
+
+    const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+
+    const paginatedLogs = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return filteredLogs.slice(startIndex, endIndex);
+    }, [filteredLogs, currentPage, itemsPerPage]);
+
+    useEffect(() => {
+        // Reset to first page whenever filters change
+        setCurrentPage(1);
+    }, [typeFilter, searchTerm, dateRange, itemsPerPage]);
 
     return (
         <div>
@@ -235,8 +250,8 @@ export default function AllActivityPage() {
                     <ScrollArea className="h-[60vh]">
                         <div className="space-y-4">
                             {isLoading && <p>Loading activities...</p>}
-                            {!isLoading && filteredLogs && filteredLogs.length > 0 ? (
-                                filteredLogs.map(log => (
+                            {!isLoading && paginatedLogs && paginatedLogs.length > 0 ? (
+                                paginatedLogs.map(log => (
                                     <div key={`${log.type}-${log.id}`} className="flex items-start gap-4 p-2 rounded-md hover:bg-muted">
                                         <div className="flex-1">
                                             <div className="flex items-center justify-between">
@@ -257,7 +272,48 @@ export default function AllActivityPage() {
                         </div>
                     </ScrollArea>
                 </CardContent>
+                <CardFooter className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Select value={String(itemsPerPage)} onValueChange={(value) => { setItemsPerPage(Number(value)); }}>
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue placeholder="Results" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="10">10</SelectItem>
+                                <SelectItem value="20">20</SelectItem>
+                                <SelectItem value="50">50</SelectItem>
+                                <SelectItem value="100">100</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p className="text-sm text-muted-foreground">
+                            Results per page
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <span className="text-sm text-muted-foreground">
+                            Page {currentPage} of {totalPages > 0 ? totalPages : 1}
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                            >
+                                Previous
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages || totalPages === 0}
+                            >
+                                Next
+                            </Button>
+                        </div>
+                    </div>
+                </CardFooter>
             </Card>
         </div>
     );
 }
+
+    
