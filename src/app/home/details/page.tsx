@@ -85,7 +85,7 @@ const detailsContent = [
     content: [
       {
         subtitle: 'Types and Efficacy',
-        points[
+        points: [
           '**Abdomen and Thigh-High Compression is Key:** The most effective garments provide at least 30-40 mmHg of pressure and cover both the abdomen and the legs.',
           '**Garment Types:** Look for abdomen-high compression stockings, or a combination of thigh-high stockings and an abdominal binder.',
           '**Why it Works:** A significant amount of blood pools in the splanchnic (gut) circulation. Compressing the abdomen is crucial for effectiveness.',
