@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent } from '@/components/ui/card';
 import ReactMarkdown from 'react-markdown';
+import React from 'react';
 
 const detailsContent = [
   {
