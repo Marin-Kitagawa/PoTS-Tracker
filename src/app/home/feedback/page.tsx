@@ -79,7 +79,7 @@ export default function FeedbackPage() {
           <input type="hidden" name="userEmail" value={user.email || ''} />
           <CardHeader>
             <CardTitle>Feedback Form</CardTitle>
-            <CardDescription>Let us know what's on your mind. We read every submission.</CardDescription>
+            <CardDescription>Let us know what's on your mind. We read every submission. Markdown is supported.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
@@ -100,7 +100,7 @@ export default function FeedbackPage() {
               <Textarea
                 id="message"
                 name="message"
-                placeholder="Please be as detailed as possible..."
+                placeholder="Please be as detailed as possible... You can use Markdown for formatting."
                 rows={8}
                 required
                 minLength={10}

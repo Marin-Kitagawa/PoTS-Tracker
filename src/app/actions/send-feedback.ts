@@ -2,12 +2,19 @@
 
 import { z } from 'zod';
 import * as nodemailer from 'nodemailer';
+import { remark } from 'remark';
+import html from 'remark-html';
 
 const feedbackSchema = z.object({
   type: z.enum(['bug', 'feature', 'feedback']),
   message: z.string().min(10, 'Message must be at least 10 characters long.'),
   userEmail: z.string().email(),
 });
+
+async function markdownToHtml(markdown: string) {
+    const result = await remark().use(html).process(markdown);
+    return result.toString();
+}
 
 export async function sendFeedback(formData: FormData) {
   const parsed = feedbackSchema.safeParse({
@@ -49,12 +56,14 @@ export async function sendFeedback(formData: FormData) {
     feedback: 'General Feedback',
   };
 
+  const htmlContent = await markdownToHtml(message);
+
   const mailOptions = {
     from: `"POTS Tracker Feedback" <${process.env.SMTP_USER}>`,
     to: toEmail,
     subject: `[${subjectPrefix[type]}] from ${userEmail}`,
     text: message,
-    html: `<p><b>From:</b> ${userEmail}</p><p><b>Type:</b> ${subjectPrefix[type]}</p><hr><p>${message.replace(/\n/g, '<br>')}</p>`,
+    html: `<p><b>From:</b> ${userEmail}</p><p><b>Type:</b> ${subjectPrefix[type]}</p><hr>${htmlContent}`,
   };
 
   try {
