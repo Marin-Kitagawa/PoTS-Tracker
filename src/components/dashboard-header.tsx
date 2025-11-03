@@ -1,5 +1,5 @@
 'use client';
-import { HeartPulse, History, Menu, User } from 'lucide-react';
+import { HeartPulse, History, Menu, User, BookOpen, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import {
   Sheet,
@@ -20,6 +20,8 @@ const mobileNavItems = [
   { href: '/home/countermeasures', label: 'Countermeasures' },
   { href: '/home/skin-cooling', label: 'Skin Cooling' },
   { href: '/home/activity', label: 'All Activities' },
+  { href: '/home/details', label: 'POTS Details' },
+  { href: '/home/feedback', label: 'Feedback' },
   { href: '/home/profile', label: 'Profile' },
 ];
 

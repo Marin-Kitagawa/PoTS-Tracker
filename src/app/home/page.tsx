@@ -2,7 +2,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, Activity } from "lucide-react";
+import { ArrowRight, BookOpen, MessageSquare } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 
@@ -15,8 +15,13 @@ const features = [
   { title: "Countermeasures", href: "/home/countermeasures", description: "Record physical countermeasure use." },
   { title: "Skin Cooling", href: "/home/skin-cooling", description: "Log skin surface cooling methods." },
   { title: "All Activities", href: "/home/activity", description: "View and filter all your logged activities." },
-  { title: "Profile", href: "/home/profile", description: "Manage your profile and account settings." },
 ];
+
+const secondaryFeatures = [
+    { title: "Management Details", href: "/home/details", description: "Learn about POTS management strategies.", icon: BookOpen },
+    { title: "Send Feedback", href: "/home/feedback", description: "Report a bug or request a feature.", icon: MessageSquare },
+    { title: "Profile", href: "/home/profile", description: "Manage your profile and account settings.", icon: ArrowRight },
+]
 
 export default function HomePage() {
   const { user, isUserLoading } = useUser();
@@ -34,8 +39,6 @@ export default function HomePage() {
   }
 
   if (!user) {
-    // This case should ideally not be hit if routing is protected
-    // but it's good practice to have it.
     return <div>Please sign in to continue.</div>
   }
 
@@ -58,6 +61,21 @@ export default function HomePage() {
                         <Button asChild variant="outline">
                             <Link href={feature.href}>
                                 Go to {feature.title} <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            ))}
+             {secondaryFeatures.map((feature) => (
+                 <Card key={feature.title}>
+                    <CardHeader>
+                        <CardTitle>{feature.title}</CardTitle>
+                        <CardDescription>{feature.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button asChild variant="outline">
+                            <Link href={feature.href}>
+                                Go to {feature.title} <feature.icon className="ml-2 h-4 w-4" />
                             </Link>
                         </Button>
                     </CardContent>

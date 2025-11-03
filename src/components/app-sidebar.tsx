@@ -13,7 +13,9 @@ import {
   HeartPulse,
   LogOut,
   User,
-  History
+  History,
+  BookOpen,
+  MessageSquare,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -28,6 +30,7 @@ const sidebarNavItems = [
   { href: '/home', icon: Home, label: 'Home' },
   { href: '/dashboard', icon: LineChart, label: 'Dashboard' },
   { href: '/home/activity', icon: History, label: 'All Activities' },
+  { href: '/home/details', icon: BookOpen, label: 'POTS Details' },
   { href: '/home/symptoms', icon: HeartPulse, label: 'Symptoms' },
   { href: '/home/exercise', icon: Dumbbell, label: 'Exercise' },
   { href: '/home/volume-expansion', icon: GlassWater, label: 'Volume Expansion' },
@@ -66,6 +69,18 @@ export default function AppSidebar() {
           ))}
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Link
+                    href="/home/feedback"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                    >
+                    <MessageSquare className="h-5 w-5" />
+                    <span className="sr-only">Feedback</span>
+                    </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right">Feedback</TooltipContent>
+            </Tooltip>
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Link
