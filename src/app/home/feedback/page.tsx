@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState, useFormStatus } from 'react-dom';
+import { useActionState, useRef, useEffect } from 'react';
+import { useFormStatus } from 'react-dom';
 import { useUser } from '@/firebase';
 import { sendFeedback } from '@/app/actions/send-feedback';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -10,7 +11,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal, Send } from 'lucide-react';
-import { useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 function SubmitButton() {
