@@ -16,7 +16,7 @@ async function markdownToHtml(markdown: string) {
     return result.toString();
 }
 
-export async function sendFeedback(formData: FormData) {
+export async function sendFeedback(previousState: { success: boolean; error: string | null }, formData: FormData) {
   const parsed = feedbackSchema.safeParse({
     type: formData.get('type'),
     message: formData.get('message'),
