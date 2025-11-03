@@ -148,7 +148,7 @@ export default function DetailsPage() {
                             <h4 className="font-semibold text-md mb-2">{section.subtitle}</h4>
                             <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                                 {section.points.map((point, pIndex) => (
-                                    <li key={pIndex} dangerouslySetInnerHTML={{ __html: point }}></li>
+                                    <li key={pIndex} dangerouslySetInnerHTML={{ __html: point.replace(/\*\*(.*?)\*\*/g, '&lt;strong&gt;$1&lt;/strong&gt;') }}></li>
                                 ))}
                             </ul>
                         </div>
