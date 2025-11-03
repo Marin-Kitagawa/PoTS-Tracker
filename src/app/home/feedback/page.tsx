@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react';
 import { useUser } from '@/firebase';
 import { sendFeedback } from '@/app/actions/send-feedback';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -25,7 +25,7 @@ function SubmitButton() {
 
 export default function FeedbackPage() {
   const { user, isUserLoading } = useUser();
-  const [initialState, setInitialState] = useState<{ success: boolean; error: string | null }>({ success: false, error: null });
+  const initialState = { success: false, error: null };
   const [state, formAction] = useActionState(sendFeedback, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
