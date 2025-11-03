@@ -6,7 +6,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import ReactMarkdown from 'react-markdown';
 
 const detailsContent = [
   {
@@ -148,7 +149,9 @@ export default function DetailsPage() {
                             <h4 className="font-semibold text-md mb-2">{section.subtitle}</h4>
                             <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                                 {section.points.map((point, pIndex) => (
-                                    <li key={pIndex} dangerouslySetInnerHTML={{ __html: point.replace(/\*\*(.*?)\*\*/g, '&lt;strong&gt;$1&lt;/strong&gt;') }}></li>
+                                    <li key={pIndex}>
+                                      <ReactMarkdown components={{ p: React.Fragment }}>{point}</ReactMarkdown>
+                                    </li>
                                 ))}
                             </ul>
                         </div>
