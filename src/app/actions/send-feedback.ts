@@ -30,21 +30,17 @@ const generateEmailHtml = (type: 'bug' | 'feature' | 'feedback', userEmail: stri
         feature: 'Feature Request',
         feedback: 'General Feedback',
     };
-    const colors = {
-        bug: '#F87171', // Red-400
-        feature: '#60A5FA', // Blue-400
-        feedback: '#A78BFA', // Violet-400
-    };
-
+    
+    // A single, more elegant header color
+    const headerColor = '#FADADD'; // A soft, feminine pink/rose color
     const title = titles[type];
-    const headerColor = colors[type];
 
     // Email-safe styles and font stack
     return `
         <!DOCTYPE html>
         <html lang="en">
         <head>
-            <meta charset="UTF-G">
+            <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${title}</title>
             <style>
@@ -79,7 +75,7 @@ const generateEmailHtml = (type: 'bug' | 'feature' | 'feedback', userEmail: stri
                     font-family: 'Belleza', 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
                     font-size: 36px;
                     font-weight: normal;
-                    color: #ffffff;
+                    color: #4A5568;
                     letter-spacing: 1px;
                 }
                 .content {
