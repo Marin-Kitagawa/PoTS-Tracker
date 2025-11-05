@@ -4,7 +4,7 @@ import { z } from 'zod';
 import sgMail from '@sendgrid/mail';
 import { remark } from 'remark';
 import html from 'remark-html';
-import { getFirestore, doc, getDoc, setDoc, increment, Transaction, runTransaction } from 'firebase/firestore';
+import { getFirestore, doc, Transaction, runTransaction, increment } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/config';
 import { format } from 'date-fns';
 
@@ -24,6 +24,124 @@ async function markdownToHtml(markdown: string) {
 
 const DAILY_LIMIT = 100;
 
+const generateEmailHtml = (type: 'bug' | 'feature' | 'feedback', userEmail: string, messageHtml: string) => {
+    const titles = {
+        bug: 'Bug Report',
+        feature: 'Feature Request',
+        feedback: 'General Feedback',
+    };
+    const colors = {
+        bug: '#F87171', // Red-400
+        feature: '#60A5FA', // Blue-400
+        feedback: '#A78BFA', // Violet-400
+    };
+
+    const title = titles[type];
+    const headerColor = colors[type];
+
+    return `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${title}</title>
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f8fafc;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+                }
+                .container {
+                    width: 100%;
+                    max-width: 600px;
+                    margin: 20px auto;
+                    background-color: #ffffff;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    overflow: hidden;
+                }
+                .header {
+                    background-color: ${headerColor};
+                    color: #ffffff;
+                    padding: 24px;
+                    text-align: center;
+                }
+                .header h1 {
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: bold;
+                }
+                .content {
+                    padding: 32px;
+                    color: #334155;
+                }
+                .content h2 {
+                    font-size: 20px;
+                    color: #1e293b;
+                    border-bottom: 1px solid #e2e8f0;
+                    padding-bottom: 8px;
+                    margin-top: 0;
+                }
+                .info-box {
+                    background-color: #f1f5f9;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 6px;
+                    padding: 16px;
+                    margin-bottom: 24px;
+                }
+                .info-box p {
+                    margin: 0;
+                    font-size: 14px;
+                }
+                .info-box strong {
+                    color: #1e293b;
+                }
+                .message-content {
+                    font-size: 16px;
+                    line-height: 1.6;
+                }
+                .message-content h1, .message-content h2, .message-content h3 { color: #1e293b; }
+                .message-content p { margin: 1em 0; }
+                .message-content ul, .message-content ol { padding-left: 20px; }
+                .message-content blockquote { border-left: 4px solid #cbd5e1; padding-left: 16px; margin-left: 0; color: #64748b; }
+                .message-content pre { background-color: #f1f5f9; padding: 16px; border-radius: 6px; white-space: pre-wrap; word-wrap: break-word; }
+                .message-content code { font-family: 'Courier New', Courier, monospace; background-color: #e2e8f0; padding: 2px 4px; border-radius: 4px; }
+                .footer {
+                    background-color: #f1f5f9;
+                    padding: 24px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #64748b;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>POTS Tracker</h1>
+                </div>
+                <div class="content">
+                    <h2>New Feedback Submission</h2>
+                    <div class="info-box">
+                        <p><strong>From:</strong> ${userEmail}</p>
+                        <p><strong>Type:</strong> ${title}</p>
+                    </div>
+                    <div class="message-content">
+                        ${messageHtml}
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>This is an automated message from the POTS Tracker application.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+};
+
+
 export async function sendFeedback(previousState: { success: boolean; error: string | null }, formData: FormData) {
   
   const statsRef = doc(firestore, 'app_state', 'feedback_stats');
@@ -35,8 +153,8 @@ export async function sendFeedback(previousState: { success: boolean; error: str
 
         let dailyCount = 0;
         if (!statsSnap.exists()) {
-             // If the document doesn't exist, we will create it with a count of 2.
-            dailyCount = 2; // As you requested
+             // If the document doesn't exist, we will create it with the correct initial count.
+            dailyCount = 0;
         } else {
             const statsData = statsSnap.data();
             if (statsData.lastResetDate === today) {
@@ -78,34 +196,34 @@ export async function sendFeedback(previousState: { success: boolean; error: str
 
         sgMail.setApiKey(sendGridApiKey);
 
+        const messageHtml = await markdownToHtml(message);
+        const emailHtml = generateEmailHtml(type, userEmail, messageHtml);
+        
         const subjectPrefix = {
             bug: 'Bug Report',
             feature: 'Feature Request',
             feedback: 'General Feedback',
         };
 
-        const htmlContent = await markdownToHtml(message);
-
         const msg = {
             to: toEmail,
             from: toEmail, 
             subject: `[${subjectPrefix[type]}] from ${userEmail}`,
-            text: `From: ${userEmail}\nType: ${subjectPrefix[type]}\n\n${message}`,
-            html: `
-                <p><b>From:</b> ${userEmail}</p>
-                <p><b>Type:</b> ${subjectPrefix[type]}</p>
-                <hr>
-                ${htmlContent}
-            `,
+            text: `From: ${userEmail}\nType: ${subjectPrefix[type]}\n\n${message}`, // Plain text fallback
+            html: emailHtml,
         };
         
         await sgMail.send(msg);
 
         // --- Increment counter on success ---
-        if (!statsSnap.exists() || statsSnap.data().lastResetDate !== today) {
-             // First submission of the day or doc doesn't exist
-             transaction.set(statsRef, { dailyCount: (dailyCount === 2 ? 2 : 1), lastResetDate: today });
+        if (!statsSnap.exists()) {
+             // First submission ever
+             transaction.set(statsRef, { dailyCount: 2, lastResetDate: today });
+        } else if (statsSnap.data().lastResetDate !== today) {
+             // First submission of a new day
+             transaction.set(statsRef, { dailyCount: 1, lastResetDate: today });
         } else {
+             // Subsequent submission on the same day
              transaction.update(statsRef, { dailyCount: increment(1) });
         }
     });
