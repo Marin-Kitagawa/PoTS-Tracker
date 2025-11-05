@@ -39,25 +39,22 @@ const generateEmailHtml = (type: 'bug' | 'feature' | 'feedback', userEmail: stri
     const title = titles[type];
     const headerColor = colors[type];
 
+    // Email-safe styles and font stack
     return `
         <!DOCTYPE html>
         <html lang="en">
         <head>
-            <meta charset="UTF-8">
+            <meta charset="UTF-G">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${title}</title>
-            <link rel="preconnect" href="https://fonts.googleapis.com">
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-            <link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;700&family=Belleza&display=swap" rel="stylesheet">
             <style>
                 body {
                     margin: 0;
                     padding: 0;
                     -webkit-font-smoothing: antialiased;
                     -moz-osx-font-smoothing: grayscale;
-                    background-color: #f0f4f8; /* Fallback */
-                    background-image: linear-gradient(120deg, hsl(208, 100%, 97%), hsl(240, 67%, 94%));
-                    font-family: 'Alegreya', serif;
+                    background-color: #f0f4f8;
+                    font-family: 'Alegreya', Georgia, Cambria, 'Times New Roman', Times, serif;
                     color: #334155;
                 }
                 .wrapper {
@@ -66,13 +63,11 @@ const generateEmailHtml = (type: 'bug' | 'feature' | 'feedback', userEmail: stri
                 .container {
                     max-width: 600px;
                     margin: 0 auto;
-                    background-color: rgba(255, 255, 255, 0.6);
-                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    background-color: #ffffff;
+                    border: 1px solid #e2e8f0;
                     border-radius: 12px;
                     overflow: hidden;
-                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-                    backdrop-filter: blur(4px);
-                    -webkit-backdrop-filter: blur(4px);
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
                 }
                 .header {
                     background-color: ${headerColor};
@@ -81,7 +76,7 @@ const generateEmailHtml = (type: 'bug' | 'feature' | 'feedback', userEmail: stri
                 }
                 .header h1 {
                     margin: 0;
-                    font-family: 'Belleza', sans-serif;
+                    font-family: 'Belleza', 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
                     font-size: 36px;
                     font-weight: normal;
                     color: #ffffff;
@@ -91,7 +86,7 @@ const generateEmailHtml = (type: 'bug' | 'feature' | 'feedback', userEmail: stri
                     padding: 32px;
                 }
                 .content h2 {
-                    font-family: 'Belleza', sans-serif;
+                    font-family: 'Belleza', 'Trebuchet MS', sans-serif;
                     font-size: 24px;
                     color: #1e293b;
                     border-bottom: 1px solid #e2e8f0;
@@ -101,7 +96,7 @@ const generateEmailHtml = (type: 'bug' | 'feature' | 'feedback', userEmail: stri
                     font-weight: normal;
                 }
                 .info-box {
-                    background-color: rgba(241, 245, 249, 0.7);
+                    background-color: #f1f5f9;
                     border: 1px solid #e2e8f0;
                     border-radius: 8px;
                     padding: 16px;
@@ -235,8 +230,8 @@ export async function sendFeedback(previousState: { success: boolean; error: str
 
         // --- Increment counter on success ---
         if (!statsSnap.exists()) {
-             // First submission ever, accounting for previous 2 sends
-             transaction.set(statsRef, { dailyCount: 3, lastResetDate: today });
+             // First submission ever, accounting for the 2 you sent
+             transaction.set(statsRef, { dailyCount: 2, lastResetDate: today });
         } else if (statsSnap.data().lastResetDate !== today) {
              // First submission of a new day
              transaction.set(statsRef, { dailyCount: 1, lastResetDate: today });
