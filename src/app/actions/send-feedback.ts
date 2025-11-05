@@ -46,70 +46,86 @@ const generateEmailHtml = (type: 'bug' | 'feature' | 'feedback', userEmail: stri
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${title}</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;700&family=Belleza&display=swap" rel="stylesheet">
             <style>
                 body {
                     margin: 0;
                     padding: 0;
-                    background-color: #f8fafc;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+                    -webkit-font-smoothing: antialiased;
+                    -moz-osx-font-smoothing: grayscale;
+                    background-color: #f0f4f8; /* Fallback */
+                    background-image: linear-gradient(120deg, hsl(208, 100%, 97%), hsl(240, 67%, 94%));
+                    font-family: 'Alegreya', serif;
+                    color: #334155;
+                }
+                .wrapper {
+                    padding: 20px;
                 }
                 .container {
-                    width: 100%;
                     max-width: 600px;
-                    margin: 20px auto;
-                    background-color: #ffffff;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 8px;
+                    margin: 0 auto;
+                    background-color: rgba(255, 255, 255, 0.6);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border-radius: 12px;
                     overflow: hidden;
+                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+                    backdrop-filter: blur(4px);
+                    -webkit-backdrop-filter: blur(4px);
                 }
                 .header {
                     background-color: ${headerColor};
-                    color: #ffffff;
-                    padding: 24px;
+                    padding: 32px;
                     text-align: center;
                 }
                 .header h1 {
                     margin: 0;
-                    font-size: 24px;
-                    font-weight: bold;
+                    font-family: 'Belleza', sans-serif;
+                    font-size: 36px;
+                    font-weight: normal;
+                    color: #ffffff;
+                    letter-spacing: 1px;
                 }
                 .content {
                     padding: 32px;
-                    color: #334155;
                 }
                 .content h2 {
-                    font-size: 20px;
+                    font-family: 'Belleza', sans-serif;
+                    font-size: 24px;
                     color: #1e293b;
                     border-bottom: 1px solid #e2e8f0;
                     padding-bottom: 8px;
                     margin-top: 0;
+                    margin-bottom: 24px;
+                    font-weight: normal;
                 }
                 .info-box {
-                    background-color: #f1f5f9;
+                    background-color: rgba(241, 245, 249, 0.7);
                     border: 1px solid #e2e8f0;
-                    border-radius: 6px;
+                    border-radius: 8px;
                     padding: 16px;
                     margin-bottom: 24px;
                 }
                 .info-box p {
-                    margin: 0;
+                    margin: 4px 0;
                     font-size: 14px;
                 }
                 .info-box strong {
                     color: #1e293b;
+                    font-weight: 700;
                 }
                 .message-content {
                     font-size: 16px;
-                    line-height: 1.6;
+                    line-height: 1.7;
                 }
-                .message-content h1, .message-content h2, .message-content h3 { color: #1e293b; }
+                .message-content h1, .message-content h2, .message-content h3 { color: #1e293b; font-family: 'Belleza', sans-serif; font-weight: normal; }
                 .message-content p { margin: 1em 0; }
                 .message-content ul, .message-content ol { padding-left: 20px; }
-                .message-content blockquote { border-left: 4px solid #cbd5e1; padding-left: 16px; margin-left: 0; color: #64748b; }
-                .message-content pre { background-color: #f1f5f9; padding: 16px; border-radius: 6px; white-space: pre-wrap; word-wrap: break-word; }
-                .message-content code { font-family: 'Courier New', Courier, monospace; background-color: #e2e8f0; padding: 2px 4px; border-radius: 4px; }
+                .message-content blockquote { border-left: 4px solid #cbd5e1; padding-left: 16px; margin-left: 0; color: #64748b; font-style: italic; }
+                .message-content pre { background-color: #f1f5f9; padding: 16px; border-radius: 6px; white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', Courier, monospace; }
+                .message-content code { font-family: 'Courier New', Courier, monospace; background-color: #e2e8f0; padding: 2px 4px; border-radius: 4px; font-size: 0.9em; }
                 .footer {
-                    background-color: #f1f5f9;
                     padding: 24px;
                     text-align: center;
                     font-size: 12px;
@@ -118,22 +134,24 @@ const generateEmailHtml = (type: 'bug' | 'feature' | 'feedback', userEmail: stri
             </style>
         </head>
         <body>
-            <div class="container">
-                <div class="header">
-                    <h1>POTS Tracker</h1>
-                </div>
-                <div class="content">
-                    <h2>New Feedback Submission</h2>
-                    <div class="info-box">
-                        <p><strong>From:</strong> ${userEmail}</p>
-                        <p><strong>Type:</strong> ${title}</p>
+            <div class="wrapper">
+                <div class="container">
+                    <div class="header">
+                        <h1>POTS Tracker</h1>
                     </div>
-                    <div class="message-content">
-                        ${messageHtml}
+                    <div class="content">
+                        <h2>New Feedback Submission</h2>
+                        <div class="info-box">
+                            <p><strong>From:</strong> ${userEmail}</p>
+                            <p><strong>Type:</strong> ${title}</p>
+                        </div>
+                        <div class="message-content">
+                            ${messageHtml}
+                        </div>
                     </div>
-                </div>
-                <div class="footer">
-                    <p>This is an automated message from the POTS Tracker application.</p>
+                    <div class="footer">
+                        <p>This is an automated message from the POTS Tracker application.</p>
+                    </div>
                 </div>
             </div>
         </body>
@@ -217,8 +235,8 @@ export async function sendFeedback(previousState: { success: boolean; error: str
 
         // --- Increment counter on success ---
         if (!statsSnap.exists()) {
-             // First submission ever
-             transaction.set(statsRef, { dailyCount: 2, lastResetDate: today });
+             // First submission ever, accounting for previous 2 sends
+             transaction.set(statsRef, { dailyCount: 3, lastResetDate: today });
         } else if (statsSnap.data().lastResetDate !== today) {
              // First submission of a new day
              transaction.set(statsRef, { dailyCount: 1, lastResetDate: today });
@@ -235,6 +253,9 @@ export async function sendFeedback(previousState: { success: boolean; error: str
     // The specific error from the transaction will be more informative
     if (e.message.includes('limit has been reached')) {
       return { success: false, error: e.message };
+    }
+     if (e.message.includes('permission-denied')) {
+        return { success: false, error: 'Could not verify submission eligibility. Please check security rules.' };
     }
     return { success: false, error: 'Could not send feedback. Please try again later.' };
   }
