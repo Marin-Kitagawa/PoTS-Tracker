@@ -1,8 +1,9 @@
 'use client';
 
-import { useActionState, useRef, useEffect } from 'react';
+import { useActionState, useRef, useEffect, useState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { sendFeedback } from '@/app/actions/send-feedback';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -10,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal, Send } from 'lucide-react';
+import { Terminal, Send, ShieldAlert } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -25,10 +27,32 @@ function SubmitButton() {
 
 export default function FeedbackPage() {
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
   const initialState = { success: false, error: null };
   const [state, formAction] = useActionState(sendFeedback, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
+
+  const feedbackStatsRef = useMemoFirebase(
+    () => firestore ? doc(firestore, 'app_state', 'feedback_stats') : null,
+    [firestore]
+  );
+  const { data: feedbackStats } = useDoc(feedbackStatsRef);
+  const [isLimitReached, setIsLimitReached] = useState(false);
+
+
+  useEffect(() => {
+    if (feedbackStats) {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const limit = 100;
+      if (feedbackStats.lastResetDate === today && feedbackStats.dailyCount >= limit) {
+        setIsLimitReached(true);
+      } else {
+        setIsLimitReached(false);
+      }
+    }
+  }, [feedbackStats]);
+
 
   useEffect(() => {
     if (state.success) {
@@ -43,6 +67,9 @@ export default function FeedbackPage() {
         title: 'Oh no! Something went wrong.',
         description: state.error,
       });
+      if (state.error.includes('limit has been reached')) {
+        setIsLimitReached(true);
+      }
     }
   }, [state, toast]);
 
@@ -70,46 +97,56 @@ export default function FeedbackPage() {
           </AlertDescription>
         </Alert>
        )}
-
-      <Card>
-        <form ref={formRef} action={formAction}>
-          <input type="hidden" name="userEmail" value={user.email || ''} />
-          <CardHeader>
-            <CardTitle>Feedback Form</CardTitle>
-            <CardDescription>Let us know what's on your mind. We read every submission. Markdown is supported.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="type">Feedback Type</Label>
-              <Select name="type" defaultValue="bug" required disabled={!user.emailVerified}>
-                <SelectTrigger id="type" className="w-full md:w-1/2">
-                  <SelectValue placeholder="Select a type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="bug">Bug Report</SelectItem>
-                  <SelectItem value="feature">Feature Request</SelectItem>
-                  <SelectItem value="feedback">General Feedback</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="message">Message</Label>
-              <Textarea
-                id="message"
-                name="message"
-                placeholder="Please be as detailed as possible... You can use Markdown for formatting."
-                rows={8}
-                required
-                minLength={10}
-                disabled={!user.emailVerified}
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <SubmitButton />
-          </CardFooter>
-        </form>
-      </Card>
+       
+       {isLimitReached ? (
+        <Alert variant="destructive" className="mb-6">
+            <ShieldAlert className="h-4 w-4" />
+            <AlertTitle>Daily Limit Reached</AlertTitle>
+            <AlertDescription>
+                We've reached our daily feedback submission limit. This is to ensure we can review every message carefully. Please try again tomorrow!
+            </AlertDescription>
+        </Alert>
+       ) : (
+          <Card>
+            <form ref={formRef} action={formAction}>
+              <input type="hidden" name="userEmail" value={user.email || ''} />
+              <CardHeader>
+                <CardTitle>Feedback Form</CardTitle>
+                <CardDescription>Let us know what's on your mind. We read every submission. Markdown is supported.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="type">Feedback Type</Label>
+                  <Select name="type" defaultValue="bug" required disabled={!user.emailVerified}>
+                    <SelectTrigger id="type" className="w-full md:w-1/2">
+                      <SelectValue placeholder="Select a type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bug">Bug Report</SelectItem>
+                      <SelectItem value="feature">Feature Request</SelectItem>
+                      <SelectItem value="feedback">General Feedback</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message</Label>
+                  <Textarea
+                    id="message"
+                    name="message"
+                    placeholder="Please be as detailed as possible... You can use Markdown for formatting."
+                    rows={8}
+                    required
+                    minLength={10}
+                    disabled={!user.emailVerified}
+                  />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <SubmitButton />
+              </CardFooter>
+            </form>
+          </Card>
+       )}
     </div>
   );
 }

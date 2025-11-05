@@ -7,12 +7,8 @@
  * allow rapid iteration during the prototyping phase.
  *
  * Data Structure:
- * All data is nested under /users/{userId}, ensuring clear ownership and isolation.
- *
- * Key Security Decisions:
- * - User listing is disallowed to prevent potential information leakage.
- * - All write operations are restricted to the owner of the data.
- * - Data consistency between the path and document fields (userId) is enforced.
+ * All user-specific data is nested under /users/{userId}, ensuring clear ownership and isolation.
+ * Global application data is stored in collections like /app_state.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -168,5 +164,18 @@ service cloud.firestore {
       allow update: if isOwner(userId);
       allow delete: if isOwner(userId);
     }
+
+    /**
+     * @description Rules for application-wide state.
+     * @path /app_state/feedback_stats
+     * @principle Allows any signed-in user to read, but writes are restricted to server-side logic (via security rules).
+     */
+    match /app_state/feedback_stats {
+        allow get: if isSignedIn();
+        // Writes (create, update) are only allowed via the server action,
+        // which has trusted access. Client-side writes are denied.
+        allow write: if false; 
+    }
+
   }
 }

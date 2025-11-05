@@ -281,6 +281,27 @@
         "usageConditions",
         "date"
       ]
+    },
+    "FeedbackStats": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FeedbackStats",
+      "type": "object",
+      "description": "Tracks daily feedback submission statistics.",
+      "properties": {
+        "dailyCount": {
+          "type": "number",
+          "description": "The number of feedback emails sent today."
+        },
+        "lastResetDate": {
+          "type": "string",
+          "description": "The date (YYYY-MM-DD) when the count was last reset.",
+          "format": "date"
+        }
+      },
+      "required": [
+        "dailyCount",
+        "lastResetDate"
+      ]
     }
   },
   "auth": {
@@ -394,6 +415,15 @@
             {"name": "userId", "description": "The unique identifier for the user."},
             {"name": "skinSurfaceCoolingLogId", "description": "The unique identifier for the skin surface cooling log entry."}
           ]
+        }
+      },
+      {
+        "path": "/app_state/feedback_stats",
+        "definition": {
+          "entityName": "FeedbackStats",
+          "schema": { "$ref": "#/backend/entities/FeedbackStats" },
+          "description": "Stores application-wide state, such as daily feedback submission counts.",
+          "params": []
         }
       }
     ]
