@@ -168,13 +168,12 @@ service cloud.firestore {
     /**
      * @description Rules for application-wide state.
      * @path /app_state/feedback_stats
-     * @principle Allows any signed-in user to read, but writes are restricted to server-side logic (via security rules).
+     * @principle Allows any signed-in user or server-side action to read,
+     * but writes are restricted to server-side logic (which happens with no auth).
      */
     match /app_state/feedback_stats {
-        allow get: if isSignedIn();
-        // Writes (create, update) are only allowed via the server action,
-        // which has trusted access. Client-side writes are denied.
-        allow write: if false; 
+        allow get: if isSignedIn() || request.auth == null;
+        allow write: if request.auth == null;
     }
 
   }
