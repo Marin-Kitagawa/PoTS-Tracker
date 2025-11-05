@@ -10,9 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal, Send, Info } from 'lucide-react';
+import { Terminal, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -71,18 +70,6 @@ export default function FeedbackPage() {
           </AlertDescription>
         </Alert>
        )}
-
-      <Alert className="mb-6">
-        <Info className="h-4 w-4" />
-        <AlertTitle>Email Server Configuration</AlertTitle>
-        <AlertDescription>
-            <p>This form uses SendGrid to send emails. If you see an error about the email service not being configured, please ensure your credentials are correct in the <code>.env</code> file.</p>
-            <p className="mt-2">You will need to set the `FEEDBACK_EMAIL_TO` and `SENDGRID_API_KEY` variables. You can get an API key from your SendGrid account dashboard.</p>
-            <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li><Link href="https://sendgrid.com" target="_blank" rel="noopener noreferrer" className="underline">Get a SendGrid Account</Link></li>
-            </ul>
-        </AlertDescription>
-      </Alert>
 
       <Card>
         <form ref={formRef} action={formAction}>
