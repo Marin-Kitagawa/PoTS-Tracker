@@ -52,7 +52,6 @@ export default function FeedbackPage() {
   }
 
   if (!user) {
-    // Should be handled by layout/auth wrapper, but as a fallback.
     return <p>Please sign in to provide feedback.</p>;
   }
 
@@ -77,11 +76,10 @@ export default function FeedbackPage() {
         <Info className="h-4 w-4" />
         <AlertTitle>Email Server Configuration</AlertTitle>
         <AlertDescription>
-            <p>This form sends an email using the SMTP settings in the <code>.env</code> file. If you see an error about the email service not being configured or failing to send, please ensure your credentials are correct.</p>
-            <p className="mt-2">Many email providers (like Gmail/Google Workspace) require an <strong className="font-semibold">App Password</strong> instead of your regular password for security. See these guides for more info:</p>
+            <p>This form uses SendGrid to send emails. If you see an error about the email service not being configured, please ensure your credentials are correct in the <code>.env</code> file.</p>
+            <p className="mt-2">You will need to set the `FEEDBACK_EMAIL_TO` and `SENDGRID_API_KEY` variables. You can get an API key from your SendGrid account dashboard.</p>
             <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li><Link href="https://support.google.com/accounts/answer/185833" target="_blank" rel="noopener noreferrer" className="underline">Google/Gmail App Passwords</Link></li>
-                <li><Link href="https://support.microsoft.com/en-us/account-billing/using-app-passwords-with-apps-that-don-t-support-two-step-verification-5896ed9b-4263-e681-128a-a6f2979a7944" target="_blank" rel="noopener noreferrer" className="underline">Microsoft/Outlook App Passwords</Link></li>
+                <li><Link href="https://sendgrid.com" target="_blank" rel="noopener noreferrer" className="underline">Get a SendGrid Account</Link></li>
             </ul>
         </AlertDescription>
       </Alert>

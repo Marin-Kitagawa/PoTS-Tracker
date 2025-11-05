@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import * as nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import { remark } from 'remark';
 import html from 'remark-html';
 
@@ -29,26 +29,19 @@ export async function sendFeedback(previousState: { success: boolean; error: str
 
   const { type, message, userEmail } = parsed.data;
   const toEmail = process.env.FEEDBACK_EMAIL_TO;
+  const sendGridApiKey = process.env.SENDGRID_API_KEY;
 
   if (!toEmail) {
     console.error('FEEDBACK_EMAIL_TO environment variable is not set.');
-    return { success: false, error: 'Server configuration error.' };
+    return { success: false, error: 'Server configuration error: Recipient email is missing.' };
   }
   
-  if (!process.env.SMTP_HOST || !process.env.SMTP_PORT || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.error('SMTP environment variables are not fully configured.');
+  if (!sendGridApiKey) {
+      console.error('SENDGRID_API_KEY environment variable is not set.');
       return { success: false, error: 'Email service is not configured.' };
   }
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT, 10),
-    secure: parseInt(process.env.SMTP_PORT, 10) === 465, // true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+  sgMail.setApiKey(sendGridApiKey);
 
   const subjectPrefix = {
     bug: 'Bug Report',
@@ -58,19 +51,25 @@ export async function sendFeedback(previousState: { success: boolean; error: str
 
   const htmlContent = await markdownToHtml(message);
 
-  const mailOptions = {
-    from: `"POTS Tracker Feedback" <${process.env.SMTP_USER}>`,
+  const msg = {
     to: toEmail,
+    // It's good practice to use a verified sender email with SendGrid
+    from: toEmail, 
     subject: `[${subjectPrefix[type]}] from ${userEmail}`,
-    text: message,
-    html: `<p><b>From:</b> ${userEmail}</p><p><b>Type:</b> ${subjectPrefix[type]}</p><hr>${htmlContent}`,
+    text: `From: ${userEmail}\nType: ${subjectPrefix[type]}\n\n${message}`,
+    html: `
+        <p><b>From:</b> ${userEmail}</p>
+        <p><b>Type:</b> ${subjectPrefix[type]}</p>
+        <hr>
+        ${htmlContent}
+    `,
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(msg);
     return { success: true, error: null };
   } catch (error) {
-    console.error('Error sending feedback email:', error);
+    console.error('Error sending feedback email with SendGrid:', error);
     return { success: false, error: 'Could not send feedback.' };
   }
 }
