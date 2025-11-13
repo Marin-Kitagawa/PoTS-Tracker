@@ -307,7 +307,9 @@
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "anonymous",
+      "google.com",
+      "github.com"
     ]
   },
   "firestore": {
